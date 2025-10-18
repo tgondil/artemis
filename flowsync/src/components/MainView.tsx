@@ -7,7 +7,7 @@ import MetricOverlay from './MetricOverlay';
 import GazeCursor from './GazeCursor';
 import CalibrationOverlay from './CalibrationOverlay';
 import { FlowPhase } from '../types';
-import { useGazeTracker } from '../hooks/useGazeTracker';
+import { useEyeTraxGazeTracker } from '../hooks/useEyeTraxGazeTracker';
 
 interface MainViewProps {
   onBack: () => void;
@@ -25,13 +25,17 @@ export default function MainView({ onBack }: MainViewProps) {
   const {
     isInitialized,
     isTracking,
+    isCalibrated,
     gazePoint,
     metrics,
     error,
+    startCamera,
     startTracking,
     stopTracking,
-    calibrate,
-  } = useGazeTracker();
+    addCalibrationPoint,
+    trainModel,
+    clearCalibration,
+  } = useEyeTraxGazeTracker();
 
   const handleToggleIntegration = (id: string) => {
     setIntegrations(prev =>
@@ -54,17 +58,18 @@ export default function MainView({ onBack }: MainViewProps) {
       try {
         setIsInitializingCamera(true);
         
-        // First, request camera permission and start tracking
-        await startTracking();
+        // Just request camera access for calibration (don't start tracking loop yet)
+        // The camera will be opened by the first calibration point capture
+        console.log('📸 Starting calibration (camera will open on first point)...');
         
         setIsInitializingCamera(false);
         
-        // Then show calibration overlay
+        // Show calibration overlay
         setTimeout(() => {
           setShowCalibration(true);
         }, 500);
       } catch (err) {
-        console.error('Failed to start tracking:', err);
+        console.error('Failed to start calibration:', err);
         setIsInitializingCamera(false);
       }
     }
@@ -73,7 +78,19 @@ export default function MainView({ onBack }: MainViewProps) {
   // Handle calibration complete
   const handleCalibrationComplete = async () => {
     setShowCalibration(false);
-    await calibrate(); // Reset metrics after calibration
+    try {
+      // Train the model with collected calibration data
+      console.log('🔵 Training model...');
+      await trainModel();
+      console.log('✅ Model training complete');
+      
+      // NOW start the tracking loop
+      console.log('🔵 Starting tracking loop...');
+      await startTracking();
+      console.log('✅ Tracking started');
+    } catch (err) {
+      console.error('Failed to complete calibration:', err);
+    }
   };
 
   // Handle calibration skip
@@ -128,6 +145,7 @@ export default function MainView({ onBack }: MainViewProps) {
         visible={showCalibration}
         onComplete={handleCalibrationComplete}
         onSkip={handleCalibrationSkip}
+        onAddCalibrationPoint={addCalibrationPoint}
       />
 
       {/* Camera initializing notification */}

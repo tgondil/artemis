@@ -121,46 +121,68 @@ export function useGazeTracker(): UseGazeTrackerReturn {
 
     const landmarks = result.faceLandmarks[0];
     
+    // Debug: Log total landmarks once
+    if (Date.now() % 5000 < 50) {
+      console.log('📊 Total landmarks:', landmarks.length);
+      if (landmarks[468]) {
+        console.log('✅ Iris landmarks available');
+      } else {
+        console.log('⚠️ Iris landmarks missing - using eye centers');
+      }
+    }
+    
     // Get eye corner landmarks for reference frames
     const leftEyeInner = landmarks[133];  // Left eye inner corner
-    const leftEyeOuter = landmarks[33];   // Left eye outer corner
-    const rightEyeInner = landmarks[362]; // Right eye inner corner  
+    const leftEyeOuter = landmarks[33];   // Left eye outer corner  
+    const rightEyeInner = landmarks[362]; // Right eye inner corner
     const rightEyeOuter = landmarks[263]; // Right eye outer corner
     
-    // Get iris center landmarks (MediaPipe provides these)
-    // Indices 468-472 are left iris, 473-477 are right iris
-    const leftIris = landmarks[468] || leftEyeOuter;  // Fallback to eye center
-    const rightIris = landmarks[473] || rightEyeOuter;
+    // MediaPipe Face Landmarker provides iris landmarks:
+    // Left iris: 468, 469, 470, 471, 472 (468 is center)
+    // Right iris: 473, 474, 475, 476, 477 (473 is center)
+    const leftIrisCenter = landmarks[468];
+    const rightIrisCenter = landmarks[473];
+    
+    // Fallback to eye outer corners if iris not available
+    const leftIris = leftIrisCenter || leftEyeOuter;
+    const rightIris = rightIrisCenter || rightEyeOuter;
 
-    if (!leftIris || !rightIris || !leftEyeInner || !rightEyeInner) return null;
+    if (!leftIris || !rightIris || !leftEyeInner || !rightEyeInner) {
+      console.warn('Missing eye landmarks');
+      return null;
+    }
 
-    // Calculate iris position relative to eye bounds (0 = inner, 1 = outer)
+    // Calculate iris position relative to eye bounds
+    // For horizontal (X): use iris position within eye width
     const leftEyeWidth = Math.abs(leftEyeOuter.x - leftEyeInner.x);
     const rightEyeWidth = Math.abs(rightEyeOuter.x - rightEyeInner.x);
     
+    // Calculate where iris is within the eye (0 = looking left, 1 = looking right)
     const leftIrisRelativeX = (leftIris.x - leftEyeInner.x) / leftEyeWidth;
     const rightIrisRelativeX = (rightIris.x - rightEyeInner.x) / rightEyeWidth;
     
     // Average both eyes for better accuracy
     const irisRelativeX = (leftIrisRelativeX + rightIrisRelativeX) / 2;
     
-    // Map iris position to screen coordinates
-    // This mapping needs calibration to be perfect, but this is a good approximation
-    // Iris at 0.5 (center of eye) should map to center of screen
-    // Add some gain to make the range feel more natural
-    const screenX = 0.5 + (irisRelativeX - 0.5) * 2.5; // 2.5x gain
+    // For vertical (Y): use iris position within eye height
+    const leftEyeTop = landmarks[159];    // Left eye top
+    const leftEyeBottom = landmarks[145]; // Left eye bottom
+    const rightEyeTop = landmarks[386];   // Right eye top
+    const rightEyeBottom = landmarks[374]; // Right eye bottom
     
-    // For Y, use the average vertical position of both irises
-    const avgIrisY = (leftIris.y + rightIris.y) / 2;
+    const leftEyeHeight = Math.abs(leftEyeBottom.y - leftEyeTop.y);
+    const rightEyeHeight = Math.abs(rightEyeBottom.y - rightEyeTop.y);
     
-    // Get face bounds for Y mapping
-    const noseTip = landmarks[1];
-    const forehead = landmarks[10];
-    const faceHeight = Math.abs(noseTip.y - forehead.y);
+    const leftIrisRelativeY = (leftIris.y - leftEyeTop.y) / leftEyeHeight;
+    const rightIrisRelativeY = (rightIris.y - rightEyeTop.y) / rightEyeHeight;
     
-    // Map Y coordinate with offset (looking down = higher Y)
-    const irisRelativeY = (avgIrisY - forehead.y) / faceHeight;
-    const screenY = 0.3 + (irisRelativeY - 0.5) * 2.0; // Offset and gain
+    const irisRelativeY = (leftIrisRelativeY + rightIrisRelativeY) / 2;
+    
+    // Map iris position to screen coordinates with calibrated gains
+    // X mapping: iris at 0.5 (center) → screen center
+    // Gains are adjusted for natural feeling
+    const screenX = 0.5 + (irisRelativeX - 0.5) * 3.0; // 3.0x horizontal gain
+    const screenY = 0.5 + (irisRelativeY - 0.5) * 2.5; // 2.5x vertical gain
 
     return {
       x: Math.max(0, Math.min(1, screenX)),

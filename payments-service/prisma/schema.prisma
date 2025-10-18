@@ -1,0 +1,59 @@
+// FlowSync Payments Demo Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(uuid())
+  name            String
+  primaryPanMasked String   // e.g., "4111********1111"
+  cardLast4       String
+  createdAt       DateTime  @default(now())
+  
+  stakes          Stake[]
+  transfers       Transfer[]
+}
+
+model Stake {
+  id              String    @id @default(uuid())
+  userId          String
+  amountTotal     Float     // e.g., 100.00
+  amountRefunded  Float     @default(0.00)
+  status          String    // HELD | CLOSED
+  createdAt       DateTime  @default(now())
+  closedAt        DateTime?
+  
+  user            User      @relation(fields: [userId], references: [id])
+  transfers       Transfer[]
+}
+
+model Transfer {
+  id              String    @id @default(uuid())
+  stakeId         String?
+  userId          String
+  direction       String    // PUSH | PULL
+  amount          Float
+  visaStatus      String?   // Visa response status
+  visaTransferId  String?   // Visa transaction ID
+  metadata        String?   // JSON string of Visa response
+  createdAt       DateTime  @default(now())
+  
+  stake           Stake?    @relation(fields: [stakeId], references: [id])
+  user            User      @relation(fields: [userId], references: [id])
+}
+
+model Pool {
+  id                String    @id @default(uuid())
+  amountTotal       Float     @default(0.00)
+  lastSettlementAt  DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+

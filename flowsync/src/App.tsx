@@ -1,7 +1,15 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, Zap, Brain, Circle } from 'lucide-react';
+import MainView from './components/MainView';
 
 function App() {
+  const [view, setView] = useState<'landing' | 'main'>('landing');
+
+  if (view === 'main') {
+    return <MainView onBack={() => setView('landing')} />;
+  }
+
   return (
     <div className="w-screen h-screen bg-background flex items-center justify-center overflow-hidden">
       {/* Background gradient overlay */}
@@ -83,7 +91,10 @@ function App() {
             transition={{ duration: 1, delay: 1.4 }}
             className="flex justify-center"
           >
-            <button className="group relative px-8 py-4 bg-white/10 hover:bg-white/15 border border-white/20 rounded-glass text-white/90 font-light text-lg transition-all duration-500 backdrop-blur-sm">
+            <button 
+              onClick={() => setView('main')}
+              className="group relative px-8 py-4 bg-white/10 hover:bg-white/15 border border-white/20 rounded-glass text-white/90 font-light text-lg transition-all duration-500 backdrop-blur-sm"
+            >
               <span className="relative z-10">Begin Calibration</span>
               <div className="absolute inset-0 bg-accent/10 opacity-0 group-hover:opacity-100 rounded-glass transition-opacity duration-500" />
             </button>

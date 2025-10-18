@@ -1,17 +1,22 @@
-// See the Electron documentation for details on how to use preload scripts:
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
-
 import { contextBridge, ipcRenderer } from 'electron';
 
-// Expose EyeTrax API to renderer
+// Expose EyeTrax API to renderer (using native EyeTrax calibration)
 contextBridge.exposeInMainWorld('eyetrax', {
-  startCamera: (cameraId: number) => ipcRenderer.invoke('eyetrax:start-camera', cameraId),
+  // Native EyeTrax 9-point calibration (fullscreen UI)
+  runCalibration: (cameraId: number) => ipcRenderer.invoke('eyetrax:run-calibration', cameraId),
+  
+  // Tracking control
   startTracking: () => ipcRenderer.invoke('eyetrax:start-tracking'),
   stopTracking: () => ipcRenderer.invoke('eyetrax:stop-tracking'),
-  addCalibrationPoint: (x: number, y: number) => ipcRenderer.invoke('eyetrax:add-calibration-point', x, y),
-  trainModel: () => ipcRenderer.invoke('eyetrax:train-model'),
+  
+  // Model persistence
+  saveModel: (filepath?: string) => ipcRenderer.invoke('eyetrax:save-model', filepath),
+  loadModel: (filepath?: string) => ipcRenderer.invoke('eyetrax:load-model', filepath),
+  
+  // Calibration management
   clearCalibration: () => ipcRenderer.invoke('eyetrax:clear-calibration'),
-  getGaze: () => ipcRenderer.invoke('eyetrax:get-gaze'),
+  
+  // Gaze updates (streaming)
   onGazeUpdate: (callback: (data: any) => void) => {
     ipcRenderer.on('eyetrax:gaze-update', (_event, data) => callback(data));
   },

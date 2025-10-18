@@ -2,281 +2,266 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { GazeMetrics } from '../types';
 
 interface GazePoint {
-  x: number; // Normalized 0-1
-  y: number; // Normalized 0-1
-  timestamp: number;
+  x: number;
+  y: number;
 }
 
-const HISTORY_DURATION = 5000; // 5 seconds
-const BLINK_THRESHOLD = 0.2;
-const SACCADE_THRESHOLD = 0.1;
-
 /**
- * Custom hook for EyeTrax-based gaze tracking
- * Uses Python backend with machine learning for high accuracy
+ * Hook for EyeTrax gaze tracking (native calibration version)
+ * Uses EyeTrax's built-in 9-point calibration UI
  */
-export const useEyeTraxGazeTracker = () => {
+export function useEyeTraxGazeTracker() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isTracking, setIsTracking] = useState(false);
+  const [isCalibrated, setIsCalibrated] = useState(false);
   const [gazePoint, setGazePoint] = useState<GazePoint | null>(null);
   const [metrics, setMetrics] = useState<GazeMetrics>({
     fixationStability: 0,
     blinkRate: 0,
-    saccadeRate: 0,
-    pupilVariance: 0,
+    saccadeVelocity: 0,
   });
   const [error, setError] = useState<string | null>(null);
-  const [isCalibrated, setIsCalibrated] = useState(false);
 
-  // History for metric calculations
+  const lastGazePointRef = useRef<GazePoint | null>(null);
   const gazeHistoryRef = useRef<GazePoint[]>([]);
-  const blinkHistoryRef = useRef<{ timestamp: number; isBlink: boolean }[]>([]);
-  const saccadeHistoryRef = useRef<{ timestamp: number; isSaccade: boolean }[]>([]);
-  const lastGazeRef = useRef<GazePoint | null>(null);
+  const blinkCountRef = useRef(0);
+  const frameCountRef = useRef(0);
 
-  // Screen dimensions for normalization
-  const [screenWidth] = useState(window.screen.width);
-  const [screenHeight] = useState(window.screen.height);
-
-  // Initialize connection to Python backend
+  // Initialize on mount
   useEffect(() => {
-    const init = async () => {
-      console.log('🔵 Initializing EyeTrax...');
-      
-      // Check if eyetrax API is available
-      if (!window.eyetrax) {
-        setError('EyeTrax API not available');
-        console.error('❌ EyeTrax API not found on window object');
+    if (typeof window !== 'undefined' && window.eyetrax) {
+      console.log('✅ EyeTrax API available');
+      setIsInitialized(true);
+    } else {
+      console.error('❌ EyeTrax API not available');
+      setError('EyeTrax API not available');
+    }
+  }, []);
+
+  // Subscribe to gaze updates
+  useEffect(() => {
+    if (!window.eyetrax) return;
+
+    const handleGazeUpdate = (data: any) => {
+      frameCountRef.current++;
+
+      if (data.blink) {
+        blinkCountRef.current++;
+        setGazePoint(null);
         return;
       }
 
-      // Register gaze update listener
-      window.eyetrax.onGazeUpdate((data) => {
-        handleGazeUpdate(data);
-      });
+      if (data.no_face) {
+        setGazePoint(null);
+        return;
+      }
 
-      setIsInitialized(true);
-      console.log('✅ EyeTrax initialized');
+      if (data.gaze) {
+        // Python returns screen pixels, we need to normalize to 0-1 for the cursor
+        const screenWidth = window.screen.width;
+        const screenHeight = window.screen.height;
+        
+        const normalizedPoint = {
+          x: data.gaze.x / screenWidth,
+          y: data.gaze.y / screenHeight,
+        };
+        
+        // Throttle updates (max 20fps to avoid overwhelming React)
+        if (frameCountRef.current % 3 === 0) {
+          setGazePoint(normalizedPoint);
+        }
+
+        // Track history for metrics (use raw pixels for variance calculation)
+        const rawPoint = { x: data.gaze.x, y: data.gaze.y };
+        gazeHistoryRef.current.push(rawPoint);
+        if (gazeHistoryRef.current.length > 30) {
+          gazeHistoryRef.current.shift();
+        }
+
+        // Calculate metrics
+        if (gazeHistoryRef.current.length >= 10) {
+          const history = gazeHistoryRef.current;
+          
+          // Fixation stability (inverse of variance)
+          const xVar = calculateVariance(history.map(p => p.x));
+          const yVar = calculateVariance(history.map(p => p.y));
+          const totalVar = Math.sqrt(xVar + yVar);
+          const stability = Math.max(0, Math.min(100, 100 - totalVar / 5));
+
+          // Blink rate (blinks per minute)
+          const blinkRate = (blinkCountRef.current / frameCountRef.current) * 60 * 20; // Assuming 20fps
+
+          // Saccade velocity (pixels per second)
+          let saccadeVelocity = 0;
+          if (lastGazePointRef.current) {
+            const dx = rawPoint.x - lastGazePointRef.current.x;
+            const dy = rawPoint.y - lastGazePointRef.current.y;
+            saccadeVelocity = Math.sqrt(dx * dx + dy * dy) * 20; // * fps
+          }
+
+          setMetrics({
+            fixationStability: stability,
+            blinkRate: Math.round(blinkRate),
+            saccadeVelocity: Math.round(saccadeVelocity),
+          });
+        }
+
+        lastGazePointRef.current = rawPoint;
+      }
     };
 
-    init();
+    window.eyetrax.onGazeUpdate(handleGazeUpdate);
 
     return () => {
-      if (window.eyetrax) {
-        window.eyetrax.removeGazeListener();
-      }
+      window.eyetrax.removeGazeListener();
     };
   }, []);
 
-  // Handle incoming gaze updates from Python
-  const handleGazeUpdate = useCallback((data: any) => {
-    const now = Date.now();
-
-    // Handle blinks
-    if (data.blink) {
-      blinkHistoryRef.current.push({ timestamp: now, isBlink: true });
-      setGazePoint(null); // Hide cursor during blink
-      return;
-    }
-
-    // Handle no face / not calibrated
-    if (data.no_face || data.not_calibrated || !data.gaze) {
-      return;
-    }
-
-    // Normalize gaze coordinates (Python returns screen pixels)
-    const normalizedGaze: GazePoint = {
-      x: Math.max(0, Math.min(1, data.gaze.x / screenWidth)),
-      y: Math.max(0, Math.min(1, data.gaze.y / screenHeight)),
-      timestamp: now,
-    };
-
-    // Update state
-    setGazePoint(normalizedGaze);
-    gazeHistoryRef.current.push(normalizedGaze);
-
-    // Detect saccades (rapid eye movements)
-    if (lastGazeRef.current) {
-      const distance = Math.sqrt(
-        Math.pow(normalizedGaze.x - lastGazeRef.current.x, 2) +
-        Math.pow(normalizedGaze.y - lastGazeRef.current.y, 2)
-      );
-      
-      if (distance > SACCADE_THRESHOLD) {
-        saccadeHistoryRef.current.push({ timestamp: now, isSaccade: true });
-      }
-    }
-
-    lastGazeRef.current = normalizedGaze;
-
-    // Update metrics periodically
-    if (now % 500 < 50) {
-      calculateMetrics();
-    }
-  }, [screenWidth, screenHeight]);
-
-  // Calculate gaze metrics
-  const calculateMetrics = useCallback(() => {
-    const now = Date.now();
-    const cutoff = now - HISTORY_DURATION;
-
-    // Filter history
-    gazeHistoryRef.current = gazeHistoryRef.current.filter(g => g.timestamp > cutoff);
-    blinkHistoryRef.current = blinkHistoryRef.current.filter(b => b.timestamp > cutoff);
-    saccadeHistoryRef.current = saccadeHistoryRef.current.filter(s => s.timestamp > cutoff);
-
-    // Fixation stability (variance of gaze points)
-    let fixationStability = 0;
-    if (gazeHistoryRef.current.length > 1) {
-      const avgX = gazeHistoryRef.current.reduce((sum, g) => sum + g.x, 0) / gazeHistoryRef.current.length;
-      const avgY = gazeHistoryRef.current.reduce((sum, g) => sum + g.y, 0) / gazeHistoryRef.current.length;
-      const variance = gazeHistoryRef.current.reduce(
-        (sum, g) => sum + Math.pow(g.x - avgX, 2) + Math.pow(g.y - avgY, 2),
-        0
-      ) / gazeHistoryRef.current.length;
-      fixationStability = Math.max(0, 100 - variance * 5000);
-    }
-
-    // Blink rate (blinks per minute)
-    const totalBlinks = blinkHistoryRef.current.filter(b => b.isBlink).length;
-    const blinkRate = (totalBlinks / (HISTORY_DURATION / 1000)) * 60;
-
-    // Saccade rate (saccades per second)
-    const totalSaccades = saccadeHistoryRef.current.filter(s => s.isSaccade).length;
-    const saccadeRate = totalSaccades / (HISTORY_DURATION / 1000);
-
-    setMetrics({
-      fixationStability: Math.round(fixationStability * 10) / 10,
-      blinkRate: Math.round(blinkRate * 10) / 10,
-      saccadeRate: Math.round(saccadeRate * 10) / 10,
-      pupilVariance: 0, // Not available from EyeTrax
-    });
-  }, []);
-
-  // Start camera (for calibration)
-  const startCamera = useCallback(async () => {
-    console.log('🔵 Starting camera for calibration...');
-    
-    if (!isInitialized) {
-      setError('EyeTrax not initialized');
-      return;
+  /**
+   * Run native EyeTrax calibration (fullscreen UI)
+   */
+  const runCalibration = useCallback(async (cameraId: number = 0) => {
+    if (!window.eyetrax) {
+      throw new Error('EyeTrax not available');
     }
 
     try {
-      const cameraResult = await window.eyetrax.startCamera(0);
-      if (!cameraResult.success) {
-        throw new Error(cameraResult.error || 'Failed to start camera');
+      console.log('🎯 Starting native EyeTrax calibration...');
+      const result = await window.eyetrax.runCalibration(cameraId);
+      
+      if (result.success) {
+        console.log('✅ Calibration complete!', result);
+        // CRITICAL: Set React state to match Python state
+        setIsCalibrated(true);
+        setError(null);
+        console.log('📝 React isCalibrated state set to TRUE');
+        return result;
+      } else {
+        throw new Error(result.error || 'Calibration failed');
       }
-      console.log('✅ Camera started');
-      setError(null);
     } catch (err: any) {
-      console.error('❌ Failed to start camera:', err);
+      console.error('❌ Calibration error:', err);
+      setError(err.message);
+      setIsCalibrated(false);
+      throw err;
+    }
+  }, []);
+
+  /**
+   * Start gaze tracking (after calibration)
+   * Note: Removed isCalibrated dependency to avoid stale closure issues
+   * Python backend is the source of truth for calibration state
+   */
+  const startTracking = useCallback(async () => {
+    if (!window.eyetrax) {
+      throw new Error('EyeTrax not available');
+    }
+
+    try {
+      console.log('▶️ Starting tracking...');
+      // Let Python backend check if calibrated (no stale React state!)
+      const result = await window.eyetrax.startTracking();
+      
+      if (result.success) {
+        setIsTracking(true);
+        setIsCalibrated(true); // Update React state to match
+        setError(null);
+        
+        // Reset metrics
+        frameCountRef.current = 0;
+        blinkCountRef.current = 0;
+        gazeHistoryRef.current = [];
+        
+        console.log('✅ Tracking started successfully');
+        return result;
+      } else {
+        throw new Error(result.error || 'Failed to start tracking');
+      }
+    } catch (err: any) {
+      console.error('❌ Start tracking error:', err);
       setError(err.message);
       throw err;
     }
-  }, [isInitialized]);
+  }, []); // Empty deps - no stale closure issues!
 
-  // Start tracking loop (AFTER calibration)
-  const startTracking = useCallback(async () => {
-    console.log('🔵 Starting EyeTrax tracking loop...');
-    
-    if (!isInitialized) {
-      setError('EyeTrax not initialized');
-      return;
-    }
-
-    try {
-      // Start tracking loop
-      const trackingResult = await window.eyetrax.startTracking();
-      if (!trackingResult.success) {
-        throw new Error(trackingResult.error || 'Failed to start tracking');
-      }
-      console.log('✅ Tracking loop started');
-
-      setIsTracking(true);
-      setError(null);
-    } catch (err: any) {
-      console.error('❌ Failed to start tracking:', err);
-      setError(err.message);
-    }
-  }, [isInitialized]);
-
-  // Stop tracking
+  /**
+   * Stop gaze tracking
+   */
   const stopTracking = useCallback(async () => {
-    console.log('🛑 Stopping EyeTrax tracking...');
-    
+    if (!window.eyetrax) return;
+
     try {
+      console.log('⏸️ Stopping tracking...');
       await window.eyetrax.stopTracking();
       setIsTracking(false);
       setGazePoint(null);
-      setError(null);
-      console.log('✅ Tracking stopped');
     } catch (err: any) {
-      console.error('❌ Failed to stop tracking:', err);
+      console.error('❌ Stop tracking error:', err);
       setError(err.message);
     }
   }, []);
 
-  // Add calibration point
-  const addCalibrationPoint = useCallback(async (screenX: number, screenY: number): Promise<number> => {
-    console.log(`📍 Adding calibration point: (${screenX}, ${screenY})`);
-    
-    try {
-      if (!isInitialized) {
-        throw new Error('EyeTrax not initialized');
-      }
-      
-      // Ensure camera is started (idempotent - safe to call multiple times)
-      await window.eyetrax.startCamera(0);
-      
-      const result = await window.eyetrax.addCalibrationPoint(screenX, screenY);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to add calibration point');
-      }
-      console.log(`✅ Calibration point added (${result.count} unique points)`);
-      return result.count || 0;
-    } catch (err: any) {
-      console.error('❌ Failed to add calibration point:', err);
-      throw err;
-    }
-  }, [isInitialized]);
+  /**
+   * Clear calibration (allows recalibrating)
+   */
+  const clearCalibration = useCallback(async () => {
+    if (!window.eyetrax) return;
 
-  // Train model with calibration data
-  const trainModel = useCallback(async (): Promise<void> => {
-    console.log('🔵 Training gaze estimation model...');
-    
     try {
-      const result = await window.eyetrax.trainModel();
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to train model');
-      }
-      console.log(`✅ Model trained with ${result.points} points`);
-      setIsCalibrated(true);
+      await window.eyetrax.clearCalibration();
+      setIsCalibrated(false);
+      setIsTracking(false);
+      setGazePoint(null);
+      console.log('🧹 Calibration cleared');
     } catch (err: any) {
-      console.error('❌ Failed to train model:', err);
+      console.error('❌ Clear calibration error:', err);
+      setError(err.message);
+    }
+  }, []);
+
+  /**
+   * Save trained model
+   */
+  const saveModel = useCallback(async (filepath?: string) => {
+    if (!window.eyetrax) {
+      throw new Error('EyeTrax not available');
+    }
+
+    try {
+      const result = await window.eyetrax.saveModel(filepath);
+      if (result.success) {
+        console.log('💾 Model saved:', result.path);
+        return result;
+      } else {
+        throw new Error(result.error || 'Failed to save model');
+      }
+    } catch (err: any) {
+      console.error('❌ Save model error:', err);
       throw err;
     }
   }, []);
 
-  // Clear calibration
-  const clearCalibration = useCallback(async (): Promise<void> => {
-    console.log('🔵 Clearing calibration...');
-    
+  /**
+   * Load trained model (skip calibration)
+   */
+  const loadModel = useCallback(async (filepath?: string) => {
+    if (!window.eyetrax) {
+      throw new Error('EyeTrax not available');
+    }
+
     try {
-      await window.eyetrax.clearCalibration();
-      setIsCalibrated(false);
-      gazeHistoryRef.current = [];
-      blinkHistoryRef.current = [];
-      saccadeHistoryRef.current = [];
-      setMetrics({
-        fixationStability: 0,
-        blinkRate: 0,
-        saccadeRate: 0,
-        pupilVariance: 0,
-      });
-      console.log('✅ Calibration cleared');
+      const result = await window.eyetrax.loadModel(filepath);
+      if (result.success) {
+        console.log('📂 Model loaded:', result.path);
+        setIsCalibrated(true);
+        setError(null);
+        return result;
+      } else {
+        throw new Error(result.error || 'Failed to load model');
+      }
     } catch (err: any) {
-      console.error('❌ Failed to clear calibration:', err);
+      console.error('❌ Load model error:', err);
+      setError(err.message);
       throw err;
     }
   }, []);
@@ -288,12 +273,19 @@ export const useEyeTraxGazeTracker = () => {
     gazePoint,
     metrics,
     error,
-    startCamera,
+    runCalibration,
     startTracking,
     stopTracking,
-    addCalibrationPoint,
-    trainModel,
     clearCalibration,
+    saveModel,
+    loadModel,
   };
-};
+}
 
+// Helper function
+function calculateVariance(values: number[]): number {
+  if (values.length === 0) return 0;
+  const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+  const squaredDiffs = values.map(val => Math.pow(val - mean, 2));
+  return squaredDiffs.reduce((sum, val) => sum + val, 0) / values.length;
+}

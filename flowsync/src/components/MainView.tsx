@@ -21,7 +21,7 @@ export default function MainView({ onBack }: MainViewProps) {
   const [showCalibration, setShowCalibration] = useState(false);
   const [isInitializingCamera, setIsInitializingCamera] = useState(false);
 
-  // Use the gaze tracker hook
+  // Use the gaze tracker hook (native calibration version)
   const {
     isInitialized,
     isTracking,
@@ -29,12 +29,12 @@ export default function MainView({ onBack }: MainViewProps) {
     gazePoint,
     metrics,
     error,
-    startCamera,
+    runCalibration,
     startTracking,
     stopTracking,
-    addCalibrationPoint,
-    trainModel,
     clearCalibration,
+    saveModel,
+    loadModel,
   } = useEyeTraxGazeTracker();
 
   const handleToggleIntegration = (id: string) => {
@@ -43,12 +43,10 @@ export default function MainView({ onBack }: MainViewProps) {
     );
   };
 
-  // Handle gaze tracking toggle
+  // Handle gaze tracking toggle (native calibration)
   const handleToggleGazeTracking = async () => {
     if (isTracking) {
       stopTracking();
-      setShowCalibration(false);
-      setIsInitializingCamera(false);
     } else {
       if (!isInitialized) {
         console.warn('Gaze tracker not initialized yet');
@@ -58,18 +56,17 @@ export default function MainView({ onBack }: MainViewProps) {
       try {
         setIsInitializingCamera(true);
         
-        // Just request camera access for calibration (don't start tracking loop yet)
-        // The camera will be opened by the first calibration point capture
-        console.log('📸 Starting calibration (camera will open on first point)...');
+        // Run native EyeTrax calibration (fullscreen)
+        console.log('🎯 Running native EyeTrax calibration...');
+        await runCalibration(0);
+        
+        // Calibration complete, start tracking
+        console.log('✅ Calibration complete, starting tracking...');
+        await startTracking();
         
         setIsInitializingCamera(false);
-        
-        // Show calibration overlay
-        setTimeout(() => {
-          setShowCalibration(true);
-        }, 500);
-      } catch (err) {
-        console.error('Failed to start calibration:', err);
+      } catch (err: any) {
+        console.error('Failed to calibrate/start tracking:', err);
         setIsInitializingCamera(false);
       }
     }
@@ -140,13 +137,7 @@ export default function MainView({ onBack }: MainViewProps) {
         </div>
       )}
 
-      {/* Calibration Overlay */}
-      <CalibrationOverlay
-        visible={showCalibration}
-        onComplete={handleCalibrationComplete}
-        onSkip={handleCalibrationSkip}
-        onAddCalibrationPoint={addCalibrationPoint}
-      />
+      {/* Native EyeTrax calibration (no React overlay needed) */}
 
       {/* Camera initializing notification */}
       {isInitializingCamera && (

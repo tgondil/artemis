@@ -127,7 +127,7 @@ class EyeTraxService {
     }
   }
 
-  private async sendCommand(command: string, params: any = {}): Promise<any> {
+  private async sendCommand(command: string, params: any = {}, timeoutMs: number = 10000): Promise<any> {
     if (!this.process || !this.isReady) {
       throw new Error('EyeTrax service not ready');
     }
@@ -144,12 +144,13 @@ class EyeTraxService {
         }
       });
 
+      // Set timeout (60 seconds for calibration, 10 seconds for other commands)
       setTimeout(() => {
         if (this.callbacks.has(requestId)) {
           this.callbacks.delete(requestId);
-          reject(new Error('Command timeout'));
+          reject(new Error(`Command timeout after ${timeoutMs}ms`));
         }
-      }, 10000);
+      }, timeoutMs);
 
       this.process?.stdin?.write(JSON.stringify(cmd) + '\n');
     });
@@ -258,24 +259,28 @@ const createWindow = () => {
 // Initialize EyeTrax service
 let mainWindow: BrowserWindow | null = null;
 
-// Set up IPC handlers BEFORE app is ready
+// Set up IPC handlers BEFORE app is ready (using native EyeTrax calibration)
 function setupEyeTraxHandlers() {
-  const eyetrax = getEyeTraxService();
+  const service = getEyeTraxService();
   
-  ipcMain.handle('eyetrax:start-camera', async (_event, cameraId) => {
+  // Native EyeTrax calibration (fullscreen UI) - needs longer timeout!
+  ipcMain.handle('eyetrax:run-calibration', async (_event, cameraId: number = 0) => {
     try {
-      await eyetrax.startCamera(cameraId);
-      return { success: true };
+      console.log('[Electron] Running native EyeTrax calibration...');
+      // Calibration takes ~20-30 seconds (2s per point × 9 points + setup time)
+      // Use 60 second timeout to be safe
+      const response = await service.sendCommand('run_calibration', { camera_id: cameraId }, 60000);
+      return response;
     } catch (error: any) {
-      console.error('Error starting camera:', error);
+      console.error('Error running calibration:', error);
       return { success: false, error: error.message };
     }
   });
   
   ipcMain.handle('eyetrax:start-tracking', async () => {
     try {
-      await eyetrax.startTracking();
-      return { success: true };
+      const response = await service.sendCommand('start_tracking', {});
+      return response;
     } catch (error: any) {
       console.error('Error starting tracking:', error);
       return { success: false, error: error.message };
@@ -284,47 +289,44 @@ function setupEyeTraxHandlers() {
   
   ipcMain.handle('eyetrax:stop-tracking', async () => {
     try {
-      await eyetrax.stopTracking();
-      return { success: true };
+      const response = await service.sendCommand('stop_tracking', {});
+      return response;
     } catch (error: any) {
+      console.error('Error stopping tracking:', error);
       return { success: false, error: error.message };
     }
   });
   
-  ipcMain.handle('eyetrax:add-calibration-point', async (_event, x, y) => {
+  ipcMain.handle('eyetrax:save-model', async (_event, filepath?: string) => {
     try {
-      const count = await eyetrax.addCalibrationPoint(x, y);
-      return { success: true, count };
+      const response = await service.sendCommand('save_model', { 
+        filepath: filepath || 'flowsync_gaze_model.pkl' 
+      });
+      return response;
     } catch (error: any) {
-      console.error('Error adding calibration point:', error);
+      console.error('Error saving model:', error);
       return { success: false, error: error.message };
     }
   });
   
-  ipcMain.handle('eyetrax:train-model', async () => {
+  ipcMain.handle('eyetrax:load-model', async (_event, filepath?: string) => {
     try {
-      const points = await eyetrax.trainModel();
-      return { success: true, points };
+      const response = await service.sendCommand('load_model', { 
+        filepath: filepath || 'flowsync_gaze_model.pkl' 
+      });
+      return response;
     } catch (error: any) {
-      console.error('Error training model:', error);
+      console.error('Error loading model:', error);
       return { success: false, error: error.message };
     }
   });
   
   ipcMain.handle('eyetrax:clear-calibration', async () => {
     try {
-      await eyetrax.clearCalibration();
-      return { success: true };
+      const response = await service.sendCommand('clear_calibration', {});
+      return response;
     } catch (error: any) {
-      return { success: false, error: error.message };
-    }
-  });
-  
-  ipcMain.handle('eyetrax:get-gaze', async () => {
-    try {
-      // Not used in streaming mode, but available if needed
-      return { success: true, data: null };
-    } catch (error: any) {
+      console.error('Error clearing calibration:', error);
       return { success: false, error: error.message };
     }
   });

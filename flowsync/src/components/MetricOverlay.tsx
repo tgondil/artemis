@@ -78,7 +78,7 @@ function MetricItem({ icon, label, value, unit, color }: MetricItemProps) {
             className="text-lg font-light"
             style={{ color }}
           >
-            {value.toFixed(1)}
+            {value?.toFixed(1) ?? '0.0'}
           </motion.span>
           <span className="text-xs text-white/40">{unit}</span>
         </div>

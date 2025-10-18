@@ -42,7 +42,8 @@ export const PHASE_CONFIGS: Record<FlowPhase, PhaseConfig> = {
 export interface GazeMetrics {
   fixationStability: number;
   blinkRate: number;
-  saccadeRate: number;
-  pupilVariance: number;
+  saccadeVelocity?: number; // Optional for compatibility
+  saccadeRate?: number;
+  pupilVariance?: number;
 }
 

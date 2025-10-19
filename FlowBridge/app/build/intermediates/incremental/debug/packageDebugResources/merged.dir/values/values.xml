@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">FlowBridge</string>
+    <string name="app_name">Artemis</string>
     <style name="Theme.FlowBridge" parent="android:Theme.Material.Light.NoActionBar"/>
 </resources>

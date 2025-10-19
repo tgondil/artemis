@@ -83,6 +83,13 @@ class FlowSyncServer(
                 try {
                     val json = JSONObject(jsonBody)
                     val flowScore = json.getDouble("flowScore").toFloat()
+
+                    // Ensure VPN service is active; if not, start it
+                    if (!ThrottleVpnService.isActive) {
+                        val intent = android.content.Intent(context, ThrottleVpnService::class.java)
+                        intent.action = ThrottleVpnService.ACTION_START
+                        context.startService(intent)
+                    }
                     
                     // Validate FlowScore
                     if (flowScore < 0f || flowScore > 1f) {
@@ -91,7 +98,14 @@ class FlowSyncServer(
                     }
                     
                     // Update throttling
+                    val wasThrottling = ThrottleManager.isThrottling()
                     ThrottleManager.updateFlowScore(flowScore)
+                    val isThrottlingNow = ThrottleManager.isThrottling()
+                    if (isThrottlingNow && !wasThrottling) {
+                        Notifications.showThrottleApplied(context, "${ThrottleManager.getRateKbps()} kbit/s")
+                    } else if (!isThrottlingNow && wasThrottling) {
+                        Notifications.showThrottleRestored(context)
+                    }
                     
                     // Prepare response
                     val status = if (ThrottleManager.isThrottling()) "throttled" else "normal"

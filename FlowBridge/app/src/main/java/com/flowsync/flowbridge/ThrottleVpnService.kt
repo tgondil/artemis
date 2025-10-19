@@ -24,6 +24,8 @@ class ThrottleVpnService : VpnService() {
         private const val NOTIFICATION_ID = 1
         const val ACTION_START = "com.flowsync.flowbridge.START"
         const val ACTION_STOP = "com.flowsync.flowbridge.STOP"
+        @Volatile
+        var isActive: Boolean = false
     }
     
     private var vpnInterface: ParcelFileDescriptor? = null
@@ -71,6 +73,7 @@ class ThrottleVpnService : VpnService() {
             }
             
             isRunning = true
+            isActive = true
             
             // Start foreground notification
             startForeground(NOTIFICATION_ID, createNotification())
@@ -94,6 +97,7 @@ class ThrottleVpnService : VpnService() {
     
     private fun stopVpn() {
         isRunning = false
+        isActive = false
         
         flowSyncServer?.stop()
         flowSyncServer = null

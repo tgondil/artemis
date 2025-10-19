@@ -27,15 +27,30 @@
 
 ```bash
 # Find your phone's IP address (in phone's Wi-Fi settings)
-# Test status endpoint
+
+# Headless control (no app UI needed) via bootstrap server on 3001
+
+# Start FlowBridge VPN service
+curl -X POST http://<PHONE_IP>:3001/api/start
+
+# Optional: set focus score immediately (throttle to Deep Focus)
+curl -X POST http://<PHONE_IP>:3001/api/focus \
+  -H "Content-Type: application/json" \
+  -d '{"flowScore": 0.3}'
+
+# Check status via bootstrap server
+curl http://<PHONE_IP>:3001/api/status
+
+# Once VPN is active, FlowBridge's internal server runs on 3000
+# Check status on 3000
 curl http://<PHONE_IP>:3000/api/status
 
-# Test throttling (FlowScore = 0.3 → 200 kbit/s)
+# Throttle via internal server on 3000
 curl -X POST http://<PHONE_IP>:3000/api/focus \
   -H "Content-Type: application/json" \
   -d '{"flowScore": 0.3}'
 
-# Test restore (FlowScore = 0.8 → unlimited)
+# Restore to normal
 curl -X POST http://<PHONE_IP>:3000/api/focus \
   -H "Content-Type: application/json" \
   -d '{"flowScore": 0.8}'

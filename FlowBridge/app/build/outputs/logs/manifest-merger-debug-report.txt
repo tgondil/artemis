@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:2:1-52:12
-INJECTED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:2:1-52:12
-INJECTED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:2:1-52:12
-INJECTED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:2:1-52:12
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:2:1-73:12
+INJECTED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:2:1-73:12
+INJECTED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:2:1-73:12
+INJECTED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:2:1-73:12
 MERGED from [androidx.compose.material3:material3:1.1.2] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/7c95ce9a501afbdcf23ef9cdf59f52e1/transformed/jetified-material3-1.1.2/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.compose.material:material-ripple-android:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/bd59fb2da5ba2169c7e3c7819bf36bc5/transformed/jetified-material-ripple-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.material:material-icons-core-android:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/5db84ea34437effd7f41ca8cafa76189/transformed/jetified-material-icons-core-release/AndroidManifest.xml:2:1-7:12
@@ -74,9 +74,17 @@ uses-permission#android.permission.FOREGROUND_SERVICE_SPECIAL_USE
 ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:13:5-89
 	android:name
 		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:13:22-86
+uses-permission#android.permission.RECEIVE_BOOT_COMPLETED
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:14:5-81
+	android:name
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:14:22-78
+uses-permission#android.permission.POST_NOTIFICATIONS
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:15:5-77
+	android:name
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:15:22-74
 application
-ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:15:5-51:19
-INJECTED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:15:5-51:19
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:17:5-72:19
+INJECTED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:17:5-72:19
 MERGED from [androidx.compose.ui:ui-test-manifest:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/700b17827cd11efa7620b9dab9c90c8c/transformed/jetified-ui-test-manifest-1.5.4/AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-test-manifest:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/700b17827cd11efa7620b9dab9c90c8c/transformed/jetified-ui-test-manifest-1.5.4/AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/656e3f30e73359c8bb5c0c2d8b52c63c/transformed/jetified-ui-tooling-release/AndroidManifest.xml:22:5-26:19
@@ -98,65 +106,85 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/devanshkhandelwal/.g
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:22:9-35
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:24:9-35
 	android:label
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:20:9-41
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:22:9-41
 	android:fullBackupContent
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:18:9-54
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:20:9-54
 	android:roundIcon
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:21:9-61
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:23:9-61
 	tools:targetApi
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:24:9-29
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:26:9-29
 	android:icon
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:19:9-56
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:21:9-56
 	android:allowBackup
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:16:9-35
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:18:9-35
 	android:theme
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:23:9-48
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:25:9-48
 	android:dataExtractionRules
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:17:9-65
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:19:9-65
 activity#com.flowsync.flowbridge.MainActivity
-ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:27:9-36:20
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:29:9-38:20
 	android:label
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:30:13-45
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:32:13-45
 	android:exported
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:29:13-36
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:31:13-36
 	android:theme
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:31:13-52
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:33:13-52
 	android:name
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:28:13-41
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:30:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:32:13-35:29
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:34:13-37:29
 action#android.intent.action.MAIN
-ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:33:17-69
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:35:17-69
 	android:name
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:33:25-66
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:35:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:34:17-77
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:36:17-77
 	android:name
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:34:27-74
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:36:27-74
 service#com.flowsync.flowbridge.ThrottleVpnService
-ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:39:9-50:19
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:41:9-52:19
 	android:exported
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:43:13-36
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:45:13-36
 	android:permission
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:41:13-69
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:43:13-69
 	android:foregroundServiceType
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:42:13-55
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:44:13-55
 	android:name
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:40:13-47
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:42:13-47
 intent-filter#action:name:android.net.VpnService
-ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:44:13-46:29
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:46:13-48:29
 action#android.net.VpnService
-ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:45:17-65
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:47:17-65
 	android:name
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:45:25-62
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:47:25-62
 property
-ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:47:13-49:68
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:49:13-51:68
 	android:value
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:49:17-65
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:51:17-65
 	android:name
-		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:48:17-76
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:50:17-76
+service#com.flowsync.flowbridge.BootstrapServerService
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:55:9-62:19
+	android:exported
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:57:13-36
+	android:foregroundServiceType
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:58:13-55
+	android:name
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:56:13-51
+receiver#com.flowsync.flowbridge.BootCompletedReceiver
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:65:9-71:20
+	android:exported
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:67:13-36
+	android:name
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:66:13-50
+intent-filter#action:name:android.intent.action.BOOT_COMPLETED
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:68:13-70:29
+action#android.intent.action.BOOT_COMPLETED
+ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:69:17-79
+	android:name
+		ADDED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:69:25-76
 uses-sdk
 INJECTED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml

@@ -17,6 +17,8 @@
     <!-- Foreground service permission -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <permission
         android:name="com.flowsync.flowbridge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
@@ -64,6 +66,25 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Focus-aware bandwidth throttling" />
         </service>
+
+        <!-- Bootstrap HTTP server for headless control -->
+        <service
+            android:name="com.flowsync.flowbridge.BootstrapServerService"
+            android:exported="true"
+            android:foregroundServiceType="specialUse" >
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Headless API control server" />
+        </service>
+
+        <!-- Auto-start bootstrap server on boot -->
+        <receiver
+            android:name="com.flowsync.flowbridge.BootCompletedReceiver"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <activity
             android:name="androidx.activity.ComponentActivity"

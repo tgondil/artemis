@@ -25,168 +25,206 @@
 19    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 19-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:13:5-89
 19-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:13:22-86
-20
-21    <permission
-21-->[androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
-22        android:name="com.flowsync.flowbridge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-22-->[androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
-23        android:protectionLevel="signature" />
-23-->[androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
-24
-25    <uses-permission android:name="com.flowsync.flowbridge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
-25-->[androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
-25-->[androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+20    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+20-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:14:5-81
+20-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:14:22-78
+21    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+21-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:15:5-77
+21-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:15:22-74
+22
+23    <permission
+23-->[androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+24        android:name="com.flowsync.flowbridge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+24-->[androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+25        android:protectionLevel="signature" />
+25-->[androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
 26
-27    <application
-27-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:15:5-51:19
-28        android:allowBackup="true"
-28-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:16:9-35
-29        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-29-->[androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
-30        android:dataExtractionRules="@xml/data_extraction_rules"
-30-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:17:9-65
-31        android:debuggable="true"
-32        android:extractNativeLibs="false"
-33        android:fullBackupContent="@xml/backup_rules"
-33-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:18:9-54
-34        android:icon="@android:drawable/ic_dialog_info"
-34-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:19:9-56
-35        android:label="@string/app_name"
-35-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:20:9-41
-36        android:roundIcon="@android:drawable/ic_dialog_info"
-36-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:21:9-61
-37        android:supportsRtl="true"
-37-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:22:9-35
-38        android:theme="@style/Theme.FlowBridge" >
-38-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:23:9-48
-39
-40        <!-- Main Activity -->
-41        <activity
-41-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:27:9-36:20
-42            android:name="com.flowsync.flowbridge.MainActivity"
-42-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:28:13-41
-43            android:exported="true"
-43-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:29:13-36
-44            android:label="@string/app_name"
-44-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:30:13-45
-45            android:theme="@style/Theme.FlowBridge" >
-45-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:31:13-52
-46            <intent-filter>
-46-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:32:13-35:29
-47                <action android:name="android.intent.action.MAIN" />
-47-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:33:17-69
-47-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:33:25-66
-48
-49                <category android:name="android.intent.category.LAUNCHER" />
-49-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:34:17-77
-49-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:34:27-74
-50            </intent-filter>
-51        </activity>
-52
-53        <!-- VPN Service -->
-54        <service
-54-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:39:9-50:19
-55            android:name="com.flowsync.flowbridge.ThrottleVpnService"
-55-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:40:13-47
-56            android:exported="true"
-56-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:43:13-36
-57            android:foregroundServiceType="specialUse"
-57-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:42:13-55
-58            android:permission="android.permission.BIND_VPN_SERVICE" >
-58-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:41:13-69
-59            <intent-filter>
-59-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:44:13-46:29
-60                <action android:name="android.net.VpnService" />
-60-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:45:17-65
-60-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:45:25-62
-61            </intent-filter>
-62
-63            <property
-63-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:47:13-49:68
-64                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-64-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:48:17-76
-65                android:value="Focus-aware bandwidth throttling" />
-65-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:49:17-65
-66        </service>
-67
-68        <activity
-68-->[androidx.compose.ui:ui-test-manifest:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/700b17827cd11efa7620b9dab9c90c8c/transformed/jetified-ui-test-manifest-1.5.4/AndroidManifest.xml:23:9-25:39
-69            android:name="androidx.activity.ComponentActivity"
-69-->[androidx.compose.ui:ui-test-manifest:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/700b17827cd11efa7620b9dab9c90c8c/transformed/jetified-ui-test-manifest-1.5.4/AndroidManifest.xml:24:13-63
-70            android:exported="true" />
-70-->[androidx.compose.ui:ui-test-manifest:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/700b17827cd11efa7620b9dab9c90c8c/transformed/jetified-ui-test-manifest-1.5.4/AndroidManifest.xml:25:13-36
-71        <activity
-71-->[androidx.compose.ui:ui-tooling-android:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/656e3f30e73359c8bb5c0c2d8b52c63c/transformed/jetified-ui-tooling-release/AndroidManifest.xml:23:9-25:39
-72            android:name="androidx.compose.ui.tooling.PreviewActivity"
-72-->[androidx.compose.ui:ui-tooling-android:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/656e3f30e73359c8bb5c0c2d8b52c63c/transformed/jetified-ui-tooling-release/AndroidManifest.xml:24:13-71
-73            android:exported="true" />
-73-->[androidx.compose.ui:ui-tooling-android:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/656e3f30e73359c8bb5c0c2d8b52c63c/transformed/jetified-ui-tooling-release/AndroidManifest.xml:25:13-36
-74
-75        <provider
-75-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:24:9-32:20
-76            android:name="androidx.startup.InitializationProvider"
-76-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:25:13-67
-77            android:authorities="com.flowsync.flowbridge.androidx-startup"
-77-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:26:13-68
-78            android:exported="false" >
-78-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:27:13-37
-79            <meta-data
-79-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:29:13-31:52
-80                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-80-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:30:17-75
-81                android:value="androidx.startup" />
-81-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:31:17-49
-82            <meta-data
-82-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/17947dca845585055082ea8776a0502d/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:29:13-31:52
-83                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-83-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/17947dca845585055082ea8776a0502d/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:30:17-78
-84                android:value="androidx.startup" />
-84-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/17947dca845585055082ea8776a0502d/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:31:17-49
-85            <meta-data
-85-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:29:13-31:52
-86                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-86-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:30:17-85
-87                android:value="androidx.startup" />
-87-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:31:17-49
-88        </provider>
-89
-90        <receiver
-90-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:34:9-52:20
-91            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-91-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:35:13-76
-92            android:directBootAware="false"
-92-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:36:13-44
-93            android:enabled="true"
-93-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:37:13-35
-94            android:exported="true"
-94-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:38:13-36
-95            android:permission="android.permission.DUMP" >
-95-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:39:13-57
-96            <intent-filter>
-96-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:40:13-42:29
-97                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-97-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:41:17-91
-97-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:41:25-88
-98            </intent-filter>
-99            <intent-filter>
-99-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:43:13-45:29
-100                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-100-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:44:17-85
-100-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:44:25-82
-101            </intent-filter>
-102            <intent-filter>
-102-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:46:13-48:29
-103                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-103-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:47:17-88
-103-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:47:25-85
-104            </intent-filter>
-105            <intent-filter>
-105-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:49:13-51:29
-106                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-106-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:50:17-95
-106-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:50:25-92
-107            </intent-filter>
-108        </receiver>
-109    </application>
+27    <uses-permission android:name="com.flowsync.flowbridge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+27-->[androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+27-->[androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+28
+29    <application
+29-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:17:5-72:19
+30        android:allowBackup="true"
+30-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:18:9-35
+31        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+31-->[androidx.core:core:1.12.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/d630bd4711f0836fcd7c85e6f4a5986a/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+32        android:dataExtractionRules="@xml/data_extraction_rules"
+32-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:19:9-65
+33        android:debuggable="true"
+34        android:extractNativeLibs="false"
+35        android:fullBackupContent="@xml/backup_rules"
+35-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:20:9-54
+36        android:icon="@android:drawable/ic_dialog_info"
+36-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:21:9-56
+37        android:label="@string/app_name"
+37-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:22:9-41
+38        android:roundIcon="@android:drawable/ic_dialog_info"
+38-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:23:9-61
+39        android:supportsRtl="true"
+39-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:24:9-35
+40        android:theme="@style/Theme.FlowBridge" >
+40-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:25:9-48
+41
+42        <!-- Main Activity -->
+43        <activity
+43-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:29:9-38:20
+44            android:name="com.flowsync.flowbridge.MainActivity"
+44-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:30:13-41
+45            android:exported="true"
+45-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:31:13-36
+46            android:label="@string/app_name"
+46-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:32:13-45
+47            android:theme="@style/Theme.FlowBridge" >
+47-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:33:13-52
+48            <intent-filter>
+48-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:34:13-37:29
+49                <action android:name="android.intent.action.MAIN" />
+49-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:35:17-69
+49-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:35:25-66
+50
+51                <category android:name="android.intent.category.LAUNCHER" />
+51-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:36:17-77
+51-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:36:27-74
+52            </intent-filter>
+53        </activity>
+54
+55        <!-- VPN Service -->
+56        <service
+56-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:41:9-52:19
+57            android:name="com.flowsync.flowbridge.ThrottleVpnService"
+57-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:42:13-47
+58            android:exported="true"
+58-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:45:13-36
+59            android:foregroundServiceType="specialUse"
+59-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:44:13-55
+60            android:permission="android.permission.BIND_VPN_SERVICE" >
+60-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:43:13-69
+61            <intent-filter>
+61-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:46:13-48:29
+62                <action android:name="android.net.VpnService" />
+62-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:47:17-65
+62-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:47:25-62
+63            </intent-filter>
+64
+65            <property
+65-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:49:13-51:68
+66                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+66-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:50:17-76
+67                android:value="Focus-aware bandwidth throttling" />
+67-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:51:17-65
+68        </service>
+69
+70        <!-- Bootstrap HTTP server for headless control -->
+71        <service
+71-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:55:9-62:19
+72            android:name="com.flowsync.flowbridge.BootstrapServerService"
+72-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:56:13-51
+73            android:exported="true"
+73-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:57:13-36
+74            android:foregroundServiceType="specialUse" >
+74-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:58:13-55
+75            <property
+75-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:49:13-51:68
+76                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+76-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:50:17-76
+77                android:value="Headless API control server" />
+77-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:51:17-65
+78        </service>
+79
+80        <!-- Auto-start bootstrap server on boot -->
+81        <receiver
+81-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:65:9-71:20
+82            android:name="com.flowsync.flowbridge.BootCompletedReceiver"
+82-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:66:13-50
+83            android:exported="true" >
+83-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:67:13-36
+84            <intent-filter>
+84-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:68:13-70:29
+85                <action android:name="android.intent.action.BOOT_COMPLETED" />
+85-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:69:17-79
+85-->/Users/devanshkhandelwal/Documents/fall2025/artemis/artemis/FlowBridge/app/src/main/AndroidManifest.xml:69:25-76
+86            </intent-filter>
+87        </receiver>
+88
+89        <activity
+89-->[androidx.compose.ui:ui-test-manifest:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/700b17827cd11efa7620b9dab9c90c8c/transformed/jetified-ui-test-manifest-1.5.4/AndroidManifest.xml:23:9-25:39
+90            android:name="androidx.activity.ComponentActivity"
+90-->[androidx.compose.ui:ui-test-manifest:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/700b17827cd11efa7620b9dab9c90c8c/transformed/jetified-ui-test-manifest-1.5.4/AndroidManifest.xml:24:13-63
+91            android:exported="true" />
+91-->[androidx.compose.ui:ui-test-manifest:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/700b17827cd11efa7620b9dab9c90c8c/transformed/jetified-ui-test-manifest-1.5.4/AndroidManifest.xml:25:13-36
+92        <activity
+92-->[androidx.compose.ui:ui-tooling-android:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/656e3f30e73359c8bb5c0c2d8b52c63c/transformed/jetified-ui-tooling-release/AndroidManifest.xml:23:9-25:39
+93            android:name="androidx.compose.ui.tooling.PreviewActivity"
+93-->[androidx.compose.ui:ui-tooling-android:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/656e3f30e73359c8bb5c0c2d8b52c63c/transformed/jetified-ui-tooling-release/AndroidManifest.xml:24:13-71
+94            android:exported="true" />
+94-->[androidx.compose.ui:ui-tooling-android:1.5.4] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/656e3f30e73359c8bb5c0c2d8b52c63c/transformed/jetified-ui-tooling-release/AndroidManifest.xml:25:13-36
+95
+96        <provider
+96-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:24:9-32:20
+97            android:name="androidx.startup.InitializationProvider"
+97-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:25:13-67
+98            android:authorities="com.flowsync.flowbridge.androidx-startup"
+98-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:26:13-68
+99            android:exported="false" >
+99-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:27:13-37
+100            <meta-data
+100-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:29:13-31:52
+101                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+101-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:30:17-75
+102                android:value="androidx.startup" />
+102-->[androidx.emoji2:emoji2:1.4.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/06582c09eeb86dcd999414328d35a43e/transformed/jetified-emoji2-1.4.0/AndroidManifest.xml:31:17-49
+103            <meta-data
+103-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/17947dca845585055082ea8776a0502d/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:29:13-31:52
+104                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+104-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/17947dca845585055082ea8776a0502d/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:30:17-78
+105                android:value="androidx.startup" />
+105-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/17947dca845585055082ea8776a0502d/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:31:17-49
+106            <meta-data
+106-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:29:13-31:52
+107                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+107-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:30:17-85
+108                android:value="androidx.startup" />
+108-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:31:17-49
+109        </provider>
 110
-111</manifest>
+111        <receiver
+111-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:34:9-52:20
+112            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+112-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:35:13-76
+113            android:directBootAware="false"
+113-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:36:13-44
+114            android:enabled="true"
+114-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:37:13-35
+115            android:exported="true"
+115-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:38:13-36
+116            android:permission="android.permission.DUMP" >
+116-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:39:13-57
+117            <intent-filter>
+117-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:40:13-42:29
+118                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+118-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:41:17-91
+118-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:41:25-88
+119            </intent-filter>
+120            <intent-filter>
+120-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:43:13-45:29
+121                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+121-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:44:17-85
+121-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:44:25-82
+122            </intent-filter>
+123            <intent-filter>
+123-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:46:13-48:29
+124                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+124-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:47:17-88
+124-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:47:25-85
+125            </intent-filter>
+126            <intent-filter>
+126-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:49:13-51:29
+127                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+127-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:50:17-95
+127-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/devanshkhandelwal/.gradle/caches/9.0-milestone-1/transforms/1a78ea507a2b13313f24e93315f7d7d7/transformed/jetified-profileinstaller-1.3.0/AndroidManifest.xml:50:25-92
+128            </intent-filter>
+129        </receiver>
+130    </application>
+131
+132</manifest>

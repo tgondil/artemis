@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, BarChart3 } from 'lucide-react';
 import GazeCursor from './GazeCursor';
-import WindowTracker from './WindowTracker';
 import EnhancedFlowSyncDashboard from './EnhancedFlowSyncDashboard';
 import { useEyeTraxGazeTracker } from '../hooks/useEyeTraxGazeTracker';
 
@@ -83,68 +82,71 @@ export default function MainView() {
             {isTracking ? 'Tracking your gaze' : 'Follow your focus'}
           </motion.p>
 
-          {/* Main Action Button */}
-          <motion.button
-            onClick={handleToggleTracking}
-            disabled={isCalibrating}
-            className="group relative px-12 py-5 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl text-white/90 font-light text-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="flex items-center space-x-3">
-              {isCalibrating ? (
-                <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  >
+          {/* Button Container */}
+          <div className="flex items-center space-x-6">
+            {/* Main Action Button */}
+            <motion.button
+              onClick={handleToggleTracking}
+              disabled={isCalibrating}
+              className="group relative px-12 py-5 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl text-white/90 font-light text-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="flex items-center space-x-3">
+                {isCalibrating ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    >
+                      <Eye className="w-5 h-5" />
+                    </motion.div>
+                    <span>Calibrating...</span>
+                  </>
+                ) : isTracking ? (
+                  <>
+                    <EyeOff className="w-5 h-5" />
+                    <span>Stop Tracking</span>
+                  </>
+                ) : (
+                  <>
                     <Eye className="w-5 h-5" />
-                  </motion.div>
-                  <span>Calibrating...</span>
-                </>
-              ) : isTracking ? (
-                <>
-                  <EyeOff className="w-5 h-5" />
-                  <span>Stop Tracking</span>
-                </>
-              ) : (
-                <>
-                  <Eye className="w-5 h-5" />
-                  <span>Enable Gaze Tracking</span>
-                </>
-              )}
-            </div>
+                    <span>Enable Gaze Tracking</span>
+                  </>
+                )}
+              </div>
 
-            {/* Button glow on hover */}
-            <motion.div
-              className="absolute inset-0 rounded-2xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
-              initial={false}
-            />
-          </motion.button>
+              {/* Button glow on hover */}
+              <motion.div
+                className="absolute inset-0 rounded-2xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+                initial={false}
+              />
+            </motion.button>
 
-          {/* Secondary Action - Open Dashboard */}
-          <motion.button
-            onClick={() => setShowDashboard(true)}
-            className="group relative px-8 py-3 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl text-white/90 font-light text-sm transition-all duration-300 mt-6"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="w-4 h-4" />
-              <span>Open Dashboard</span>
-            </div>
-            {/* Button glow on hover */}
-            <motion.div
-              className="absolute inset-0 rounded-xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
-              initial={false}
-            />
-          </motion.button>
+            {/* Secondary Action - Open Dashboard */}
+            <motion.button
+              onClick={() => setShowDashboard(true)}
+              className="group relative px-12 py-5 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl text-white/90 font-light text-lg transition-all duration-300"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="flex items-center space-x-3">
+                <BarChart3 className="w-5 h-5" />
+                <span>Open Dashboard</span>
+              </div>
+              {/* Button glow on hover */}
+              <motion.div
+                className="absolute inset-0 rounded-2xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+                initial={false}
+              />
+            </motion.button>
+          </div>
 
           {/* Error message */}
           <AnimatePresence>
@@ -205,35 +207,6 @@ export default function MainView() {
         )}
       </AnimatePresence>
 
-      {/* Window Tracker - Top Left */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, delay: 0.5 }}
-        className="fixed top-8 left-8 z-20"
-      >
-        <WindowTracker />
-      </motion.div>
-
-      {/* Dashboard Toggle - Top Right */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, delay: 0.6 }}
-        className="fixed top-8 right-8 z-20"
-      >
-        <button
-          onClick={() => {
-            console.log('[MainView] Dashboard button clicked, current state:', showDashboard);
-            setShowDashboard(!showDashboard);
-            console.log('[MainView] Dashboard state set to:', !showDashboard);
-          }}
-          className="p-3 bg-green-500/20 backdrop-blur-xl border border-green-500/30 rounded-lg hover:bg-green-500/30 transition-all duration-200 text-green-400"
-          title="Open Enhanced FlowSync Dashboard"
-        >
-          <BarChart3 size={20} />
-        </button>
-      </motion.div>
 
 
       {/* Minimal Metrics - Bottom Right (optional) */}

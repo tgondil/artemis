@@ -5,6 +5,68 @@ import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
 
+// Helper function to analyze window context and extract rich information
+function analyzeWindowContext(win: any): Partial<WindowInfo> {
+  const now = Date.now();
+  
+  // Extract file path from title (common patterns)
+  let filePath: string | undefined;
+  let projectContext: string | undefined;
+  let windowType: WindowInfo['windowType'] = 'other';
+  
+  // Analyze title for context clues
+  const title = win.title || '';
+  const appName = win.owner?.name || '';
+  
+  // File path extraction (VS Code, editors, etc.)
+  if (title.includes(' — ') || title.includes(' - ')) {
+    const parts = title.split(/[—\-]/);
+    if (parts.length > 1) {
+      filePath = parts[1].trim();
+    }
+  }
+  
+  // Project context extraction
+  if (filePath) {
+    const pathParts = filePath.split('/');
+    if (pathParts.length > 1) {
+      projectContext = pathParts[pathParts.length - 2]; // Parent directory
+    }
+  }
+  
+  // Window type classification
+  if (appName.toLowerCase().includes('code') || 
+      appName.toLowerCase().includes('cursor') ||
+      appName.toLowerCase().includes('sublime') ||
+      appName.toLowerCase().includes('atom')) {
+    windowType = 'coding';
+  } else if (appName.toLowerCase().includes('chrome') ||
+             appName.toLowerCase().includes('firefox') ||
+             appName.toLowerCase().includes('safari')) {
+    windowType = 'research';
+  } else if (appName.toLowerCase().includes('slack') ||
+             appName.toLowerCase().includes('discord') ||
+             appName.toLowerCase().includes('teams')) {
+    windowType = 'communication';
+  } else if (appName.toLowerCase().includes('spotify') ||
+             appName.toLowerCase().includes('youtube') ||
+             appName.toLowerCase().includes('netflix')) {
+    windowType = 'entertainment';
+  } else if (appName.toLowerCase().includes('notion') ||
+             appName.toLowerCase().includes('obsidian') ||
+             appName.toLowerCase().includes('todo')) {
+    windowType = 'productivity';
+  }
+  
+  return {
+    filePath,
+    projectContext,
+    focusDuration: 0, // Will be calculated by the monitor
+    lastActivity: now,
+    windowType
+  };
+}
+
 // Custom activeWindow function that uses the correct binary path
 async function getActiveWindowWithCorrectPath(): Promise<any> {
   try {
@@ -33,6 +95,12 @@ export interface WindowInfo {
   };
   url?: string; // Available for browsers
   memoryUsage?: number;
+  // Enhanced context fields
+  filePath?: string;
+  projectContext?: string;
+  focusDuration: number;
+  lastActivity: number;
+  windowType: 'coding' | 'research' | 'communication' | 'entertainment' | 'productivity' | 'other';
 }
 
 export interface WindowHistoryEntry {
@@ -72,6 +140,18 @@ export class WindowMonitor {
         return null;
       }
 
+      // Analyze window context for rich information
+      const context = analyzeWindowContext(win);
+      
+      // Calculate focus duration if this is the same window
+      const now = Date.now();
+      let focusDuration = 0;
+      if (this.currentWindow && 
+          this.currentWindow.owner.processId === win.owner.processId &&
+          this.currentWindow.title === win.title) {
+        focusDuration = this.currentWindow.focusDuration + (now - this.lastPollTime);
+      }
+
       return {
         title: win.title,
         owner: {
@@ -87,6 +167,12 @@ export class WindowMonitor {
         },
         url: 'url' in win ? win.url : undefined,
         memoryUsage: 'memoryUsage' in win ? win.memoryUsage : undefined,
+        // Enhanced context
+        filePath: context.filePath,
+        projectContext: context.projectContext,
+        focusDuration,
+        lastActivity: now,
+        windowType: context.windowType || 'other',
       };
     } catch (error: any) {
       const errorMessage = error.message || error.toString();
@@ -246,6 +332,94 @@ export class WindowMonitor {
       recentHistory: this.getHistory(),
       appTimeSpent: this.getAppTimeSpent(),
     };
+  }
+
+  /**
+   * Get comprehensive context data for LLM reasoning
+   */
+  getRichContext(): {
+    currentTask: {
+      app: string;
+      filePath?: string;
+      project?: string;
+      windowType: string;
+      focusDuration: number;
+    };
+    sessionContext: {
+      totalSessionTime: number;
+      primaryActivity: string;
+      focusStability: number;
+      taskSwitches: number;
+    };
+    behavioralPatterns: {
+      averageFocusDuration: number;
+      mostUsedApps: Array<{app: string, time: number}>;
+      windowTypeDistribution: Record<string, number>;
+    };
+  } {
+    const now = Date.now();
+    const sessionStart = this.history.length > 0 ? this.history[0].timestamp : now;
+    const totalSessionTime = now - sessionStart;
+    
+    // Calculate focus stability (percentage of time in same window)
+    const recentHistory = this.getHistory();
+    const sameWindowTime = this.currentWindow ? this.currentWindow.focusDuration : 0;
+    const focusStability = totalSessionTime > 0 ? (sameWindowTime / totalSessionTime) * 100 : 0;
+    
+    // Count task switches
+    const taskSwitches = recentHistory.filter((entry, index) => 
+      index > 0 && entry.window.owner.processId !== recentHistory[index - 1].window.owner.processId
+    ).length;
+    
+    // Calculate average focus duration
+    const focusDurations = recentHistory.map(entry => entry.duration);
+    const averageFocusDuration = focusDurations.length > 0 
+      ? focusDurations.reduce((a, b) => a + b, 0) / focusDurations.length 
+      : 0;
+    
+    // Get most used apps
+    const appTimeSpent = this.getAppTimeSpent();
+    const mostUsedApps = Object.entries(appTimeSpent)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+      .map(([app, time]) => ({ app, time }));
+    
+    // Window type distribution
+    const windowTypeDistribution: Record<string, number> = {};
+    recentHistory.forEach(entry => {
+      const type = entry.window.windowType;
+      windowTypeDistribution[type] = (windowTypeDistribution[type] || 0) + entry.duration;
+    });
+    
+    return {
+      currentTask: {
+        app: this.currentWindow?.owner.name || 'Unknown',
+        filePath: this.currentWindow?.filePath,
+        project: this.currentWindow?.projectContext,
+        windowType: this.currentWindow?.windowType || 'other',
+        focusDuration: this.currentWindow?.focusDuration || 0,
+      },
+      sessionContext: {
+        totalSessionTime,
+        primaryActivity: this.getPrimaryActivity(),
+        focusStability,
+        taskSwitches,
+      },
+      behavioralPatterns: {
+        averageFocusDuration,
+        mostUsedApps,
+        windowTypeDistribution,
+      },
+    };
+  }
+
+  /**
+   * Determine the primary activity based on time spent
+   */
+  private getPrimaryActivity(): string {
+    const appTimeSpent = this.getAppTimeSpent();
+    const sortedApps = Object.entries(appTimeSpent).sort(([,a], [,b]) => b - a);
+    return sortedApps.length > 0 ? sortedApps[0][0] : 'Unknown';
   }
 
   /**

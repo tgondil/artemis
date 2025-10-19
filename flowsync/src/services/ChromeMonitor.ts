@@ -6,6 +6,12 @@ interface TabMetadata {
   url: string;
   type: string;
   faviconUrl?: string;
+  // Enhanced context fields
+  domain: string;
+  category: 'research' | 'social' | 'entertainment' | 'productivity' | 'development' | 'news' | 'other';
+  isWorkRelated: boolean;
+  projectContext?: string;
+  contentType: 'documentation' | 'code' | 'article' | 'video' | 'social' | 'shopping' | 'other';
 }
 
 interface TabContent {
@@ -22,6 +28,13 @@ interface TabActivity {
   lastActive: number; // Timestamp of last activity
   isActive: boolean;
   networkActive: boolean; // Has recent network activity
+  // Enhanced behavioral tracking
+  focusDuration: number; // Continuous time in focus
+  switchCount: number; // How many times user switched to this tab
+  scrollEvents: number; // Number of scroll events
+  clickEvents: number; // Number of click events
+  dwellTime: number; // Average time per visit
+  engagementScore: number; // Calculated engagement level (0-100)
 }
 
 export interface ChromeTab {
@@ -37,12 +50,102 @@ export interface ChromeSnapshot {
   totalTabs: number;
 }
 
+export interface BrowsingPatterns {
+  sessionDuration: number;
+  totalTabsOpened: number;
+  tabSwitchingFrequency: number;
+  averageTabDwellTime: number;
+  mostEngagedTabs: Array<{url: string, engagementScore: number}>;
+  categoryDistribution: Record<string, number>;
+  workRelatedRatio: number;
+  distractionLevel: number; // 0-100, based on non-work tabs
+}
+
+export interface ChromeRichContext {
+  currentBrowsingContext: {
+    activeTabs: ChromeTab[];
+    primaryDomain: string;
+    browsingMode: 'research' | 'development' | 'social' | 'entertainment' | 'mixed';
+    focusStability: number;
+  };
+  sessionPatterns: BrowsingPatterns;
+  behavioralInsights: {
+    attentionSpan: number;
+    multitaskingLevel: number;
+    productivityScore: number;
+    distractionTriggers: string[];
+  };
+}
+
+// Helper functions for tab analysis
+function analyzeTabContext(url: string, title: string): Partial<TabMetadata> {
+  const domain = new URL(url).hostname;
+  
+  // Categorize domain
+  let category: TabMetadata['category'] = 'other';
+  let isWorkRelated = false;
+  let contentType: TabMetadata['contentType'] = 'other';
+  
+  // Work-related domains
+  if (domain.includes('github.com') || domain.includes('stackoverflow.com') || 
+      domain.includes('developer.mozilla.org') || domain.includes('docs.') ||
+      domain.includes('api.') || domain.includes('dev.')) {
+    category = 'development';
+    isWorkRelated = true;
+    contentType = 'documentation';
+  } else if (domain.includes('google.com') && title.toLowerCase().includes('search')) {
+    category = 'research';
+    isWorkRelated = true;
+  } else if (domain.includes('youtube.com')) {
+    category = 'entertainment';
+    contentType = 'video';
+  } else if (domain.includes('twitter.com') || domain.includes('facebook.com') || 
+             domain.includes('instagram.com') || domain.includes('linkedin.com')) {
+    category = 'social';
+    contentType = 'social';
+  } else if (domain.includes('reddit.com') || domain.includes('hackernews.com')) {
+    category = 'news';
+    contentType = 'article';
+  } else if (domain.includes('notion.so') || domain.includes('trello.com') || 
+             domain.includes('asana.com') || domain.includes('slack.com')) {
+    category = 'productivity';
+    isWorkRelated = true;
+  }
+  
+  // Extract project context from URL
+  let projectContext: string | undefined;
+  if (domain.includes('github.com')) {
+    const pathParts = new URL(url).pathname.split('/');
+    if (pathParts.length >= 3) {
+      projectContext = `${pathParts[1]}/${pathParts[2]}`;
+    }
+  }
+  
+  return {
+    domain,
+    category,
+    isWorkRelated,
+    projectContext,
+    contentType
+  };
+}
+
+function calculateEngagementScore(activity: TabActivity): number {
+  const timeWeight = Math.min(activity.timeSpent / 300, 1); // 5 minutes = max
+  const interactionWeight = Math.min((activity.scrollEvents + activity.clickEvents) / 20, 1);
+  const focusWeight = Math.min(activity.focusDuration / 180, 1); // 3 minutes = max
+  
+  return Math.round((timeWeight * 0.4 + interactionWeight * 0.3 + focusWeight * 0.3) * 100);
+}
+
 export class ChromeMonitor {
   private cdpPort: number;
   private isConnected: boolean = false;
   private tabActivityMap: Map<string, TabActivity> = new Map();
   private activeTabId: string | null = null;
   private lastPollTime: number = Date.now();
+  private sessionStartTime: number = Date.now();
+  private tabSwitchCount: number = 0;
 
   constructor(cdpPort: number = 9222) {
     this.cdpPort = cdpPort;

@@ -484,6 +484,17 @@ function setupWindowMonitorHandlers() {
     }
   });
 
+  // Get rich context data for LLM reasoning
+  ipcMain.handle('window:get-rich-context', async () => {
+    try {
+      const richContext = monitor.getRichContext();
+      return { success: true, context: richContext };
+    } catch (error: any) {
+      console.error('[Window] Failed to get rich context:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
   // Cleanup window monitor
   ipcMain.handle('window:cleanup', async () => {
     try {

@@ -141,6 +141,7 @@ export interface WindowAPI {
   getHistory: () => Promise<{ success: boolean; history?: WindowHistoryEntry[]; error?: string }>;
   isAppActive: (appName: string) => Promise<{ success: boolean; isActive?: boolean; error?: string }>;
   getCurrentTitle: () => Promise<{ success: boolean; title?: string | null; error?: string }>;
+  getRichContext: () => Promise<{ success: boolean; context?: any; error?: string }>;
   cleanup: () => Promise<{ success: boolean; error?: string }>;
 }
 

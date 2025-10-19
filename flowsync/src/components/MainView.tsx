@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 import GazeCursor from './GazeCursor';
 import WindowTracker from './WindowTracker';
+import RichContextTest from './RichContextTest';
 import { useEyeTraxGazeTracker } from '../hooks/useEyeTraxGazeTracker';
 
 export default function MainView() {
@@ -191,6 +192,9 @@ export default function MainView() {
       >
         <WindowTracker />
       </motion.div>
+
+      {/* Rich Context Test - Bottom Right */}
+      <RichContextTest />
 
       {/* Minimal Metrics - Bottom Right (optional) */}
       <AnimatePresence>

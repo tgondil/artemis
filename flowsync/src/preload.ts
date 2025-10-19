@@ -58,6 +58,9 @@ contextBridge.exposeInMainWorld('flowsyncWindowAPI', {
   isAppActive: (appName: string) => ipcRenderer.invoke('window:is-app-active', appName),
   getCurrentTitle: () => ipcRenderer.invoke('window:get-current-title'),
   
+  // Rich context for LLM reasoning
+  getRichContext: () => ipcRenderer.invoke('window:get-rich-context'),
+  
   // Cleanup
   cleanup: () => ipcRenderer.invoke('window:cleanup'),
 });

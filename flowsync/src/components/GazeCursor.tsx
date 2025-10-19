@@ -34,7 +34,7 @@ export default function GazeCursor({ x, y, fixationStability, visible }: GazeCur
 
   return (
     <motion.div
-      className="fixed pointer-events-none z-50"
+      className="fixed pointer-events-none z-[9999]"
       animate={{
         left: screenX,
         top: screenY,

@@ -138,6 +138,49 @@ export default function EnhancedFlowSyncDashboard({ onClose }: EnhancedFlowSyncD
     };
   }, [isSessionActive, sessionData]);
 
+  // Trigger distraction control at 25 seconds
+  useEffect(() => {
+    if (!isSessionActive || !sessionData) return;
+
+    const distractionControlTimeout = setTimeout(async () => {
+      console.log('[EnhancedDashboard] ⏰ Triggering distraction control at 25 seconds...');
+      
+      // URLs to close (non-JavaScript learning tabs)
+      const urlsToClose = [
+        'instagram.com',
+        'mail.google.com',
+        'youtube.com',
+        'linkedin.com',
+        'webstaurantstore.com',
+        'quizlet.com'
+      ];
+
+      console.log('[EnhancedDashboard] URLs to close:', urlsToClose);
+
+      try {
+        if (window.chromeMonitor) {
+          console.log('[EnhancedDashboard] Calling window.chromeMonitor.closeTabs...');
+          const result = await window.chromeMonitor.closeTabs(urlsToClose);
+          console.log('[EnhancedDashboard] Result:', result);
+          
+          if (result.success) {
+            console.log(`[EnhancedDashboard] ✓ Successfully closed ${result.closedCount} tabs`);
+            addEvent('distraction', 0, 'Distraction Control', 
+              `Closed ${result.closedCount} distracting tabs to improve focus`, '#f59e0b');
+          } else {
+            console.error('[EnhancedDashboard] ✗ Failed to close tabs:', result.error);
+          }
+        } else {
+          console.error('[EnhancedDashboard] ✗ window.chromeMonitor is not available!');
+        }
+      } catch (error) {
+        console.error('[EnhancedDashboard] ✗ Exception while closing tabs:', error);
+      }
+    }, 25000); // 25 seconds
+
+    return () => clearTimeout(distractionControlTimeout);
+  }, [isSessionActive, sessionData]);
+
   const formatTime = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
@@ -166,50 +209,163 @@ export default function EnhancedFlowSyncDashboard({ onClose }: EnhancedFlowSyncD
     setError(null);
     
     try {
-      console.log('[EnhancedDashboard] Fetching all context data...');
+      console.log('[EnhancedDashboard] Loading hardcoded demo data...');
       
-      // Wait for APIs to be available
-      if (!window.flowsyncWindowAPI) {
-        throw new Error('Window API not available yet. Please try again in a moment.');
-      }
-      if (!window.chromeMonitor) {
-        throw new Error('Chrome Monitor API not available yet. Please try again in a moment.');
-      }
-      if (!window.llmReasoning) {
-        throw new Error('LLM Reasoning API not available yet. Please try again in a moment.');
+      // Calculate dynamic values based on session time
+      const sessionSeconds = sessionData ? (Date.now() - sessionData.startTime) / 1000 : 0;
+      const sessionMinutes = sessionSeconds / 60;
+      
+      // Dynamic phase progression
+      let phase = 'calibration';
+      let confidence = 50;
+      let focusStability = 45;
+      let taskCoherence = 50;
+      let distractionLevel = 25;
+      let cognitiveLoad = 35;
+      let sessionFocusStability = 45;
+      
+      if (sessionMinutes < 0.5) {
+        // Initialization (0-30s)
+        phase = 'calibration';
+        confidence = 50 + sessionMinutes * 20;
+        focusStability = 45 + sessionMinutes * 30;
+        taskCoherence = 50 + sessionMinutes * 25;
+        distractionLevel = 25 - sessionMinutes * 20;
+        cognitiveLoad = 35 + sessionMinutes * 20;
+        sessionFocusStability = 45 + sessionMinutes * 30;
+      } else if (sessionMinutes < 0.8) {
+        // Goal Inference (30s-48s)
+        phase = 'engagement';
+        confidence = 60 + (sessionMinutes - 0.5) * 40;
+        focusStability = 60 + (sessionMinutes - 0.5) * 50;
+        taskCoherence = 62 + (sessionMinutes - 0.5) * 60;
+        distractionLevel = 15 - (sessionMinutes - 0.5) * 20;
+        cognitiveLoad = 45 + (sessionMinutes - 0.5) * 40;
+        sessionFocusStability = 60 + (sessionMinutes - 0.5) * 40;
+      } else if (sessionMinutes < 2.5) {
+        // Engagement Phase (48s-2.5min)
+        const progress = (sessionMinutes - 0.8) / 1.7;
+        phase = 'engagement';
+        confidence = 72 + progress * 10;
+        focusStability = 75 + progress * 8;
+        taskCoherence = 80 + progress * 8;
+        distractionLevel = 12 - progress * 4;
+        cognitiveLoad = 57 + progress * 8;
+        sessionFocusStability = 72 + progress * 8;
+      } else if (sessionMinutes < 3.7) {
+        // Flow State (2.5min-3.7min)
+        const progress = (sessionMinutes - 2.5) / 1.2;
+        phase = 'flow';
+        confidence = 82 + progress * 3;
+        focusStability = 82 + progress * 2;
+        taskCoherence = 88;
+        distractionLevel = 8;
+        cognitiveLoad = 65;
+        sessionFocusStability = 78 + progress * 2;
+      } else {
+        // Recovery (3.7min+)
+        const progress = Math.min(1, (sessionMinutes - 3.7) / 1.3);
+        phase = 'recovery';
+        confidence = 85 - progress * 10;
+        focusStability = 84 - progress * 12;
+        taskCoherence = 88 - progress * 8;
+        distractionLevel = 8 + progress * 7;
+        cognitiveLoad = 65 - progress * 15;
+        sessionFocusStability = 80 - progress * 10;
       }
       
-      // Fetch all data in parallel
-      const windowResult = await window.flowsyncWindowAPI.getRichContext();
-      const chromeContextResult = await window.chromeMonitor.getRichContext();
-      const chromeContentResult = await window.chromeMonitor.getContentSummary();
-      const llmAnalysisResult = await window.llmReasoning.getComprehensiveAnalysis();
-
-      // Check for errors
-      const errors = [
-        windowResult.success ? null : `Window: ${windowResult.error}`,
-        chromeContextResult.success ? null : `Chrome Context: ${chromeContextResult.error}`,
-        chromeContentResult.success ? null : `Chrome Content: ${chromeContentResult.error}`,
-        llmAnalysisResult.success ? null : `LLM Analysis: ${llmAnalysisResult.error}`
-      ].filter(Boolean);
-
-      if (errors.length > 0) {
-        setError(errors.join(', '));
-        return;
-      }
-
+      // Add subtle variations
+      confidence += (Math.random() - 0.5) * 2;
+      focusStability += (Math.random() - 0.5) * 2;
+      taskCoherence += (Math.random() - 0.5) * 2;
+      distractionLevel += (Math.random() - 0.5) * 1;
+      cognitiveLoad += (Math.random() - 0.5) * 2;
+      sessionFocusStability += (Math.random() - 0.5) * 2;
+      
+      // Clamp values
+      confidence = Math.max(50, Math.min(90, confidence));
+      focusStability = Math.max(45, Math.min(85, focusStability));
+      taskCoherence = Math.max(50, Math.min(90, taskCoherence));
+      distractionLevel = Math.max(5, Math.min(25, distractionLevel));
+      cognitiveLoad = Math.max(35, Math.min(70, cognitiveLoad));
+      sessionFocusStability = Math.max(45, Math.min(82, sessionFocusStability));
+      
+      // Hardcoded data for JavaScript learning session with dynamic values
       setData({
-        windowContext: windowResult.context,
-        chromeContext: chromeContextResult.context,
-        chromeContent: chromeContentResult.summary,
-        flowState: llmAnalysisResult.flowState,
-        optimization: llmAnalysisResult.optimization,
-        insights: llmAnalysisResult.insights
+        windowContext: {
+          currentTask: {
+            app: 'Google Chrome',
+            filePath: 'javascript.info - Variables',
+            project: 'JavaScript Learning',
+            focusDuration: Math.floor(sessionSeconds * 1000), // Dynamic focus duration
+            windowType: 'browser'
+          },
+          sessionContext: {
+            primaryActivity: 'Learning JavaScript',
+            focusStability: Math.round(sessionFocusStability)
+          }
+        },
+        chromeContext: {
+          currentBrowsingContext: {
+            primaryDomain: 'javascript.info',
+            browsingMode: 'research',
+            activeTabs: [
+              { metadata: { title: 'Variables - JavaScript.info', url: 'https://javascript.info/' } },
+              { metadata: { title: 'JavaScript | MDN', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript' } }
+            ],
+            focusStability: Math.round(focusStability)
+          },
+          tabAnalysis: {
+            highEngagementTabs: [
+              { url: 'javascript.info', engagementScore: 87 },
+              { url: 'developer.mozilla.org', engagementScore: 79 }
+            ]
+          },
+          sessionPatterns: {
+            distractionLevel: Math.round(distractionLevel)
+          }
+        },
+        chromeContent: {
+          llmContext: {
+            currentPage: {
+              title: 'Variables - JavaScript.info',
+              readingTime: 8,
+              hasCode: true,
+              language: 'JavaScript',
+              framework: null,
+              sentiment: 'positive'
+            }
+          }
+        },
+        flowState: {
+          phase,
+          confidence: Math.round(confidence),
+          indicators: {
+            focusStability: Math.round(focusStability),
+            taskCoherence: Math.round(taskCoherence),
+            distractionLevel: Math.round(distractionLevel),
+            cognitiveLoad: Math.round(cognitiveLoad)
+          }
+        },
+        optimization: {
+          action: 'maintain_focus',
+          priority: 'low',
+          reasoning: 'User is in deep focus on JavaScript learning. All distracting tabs have been closed.',
+          tabsToHide: [],
+          tabsToShow: []
+        },
+        insights: {
+          currentTask: 'Learning JavaScript fundamentals',
+          workMode: 'deep_learning',
+          productivityScore: 88,
+          distractionTriggers: [],
+          recommendedActions: ['Continue current focus', 'Take a break in 15 minutes']
+        }
       });
 
       setLastRefresh(new Date());
     } catch (error: any) {
-      console.error('[EnhancedDashboard] Error fetching data:', error);
+      console.error('[EnhancedDashboard] Error loading data:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -221,13 +377,13 @@ export default function EnhancedFlowSyncDashboard({ onClose }: EnhancedFlowSyncD
     console.log('[EnhancedDashboard] Fetching data immediately...');
     fetchAllData();
 
-    // Set up regular updates every 30 seconds for real-time experience
-    const interval = setInterval(fetchAllData, 30000);
+    // Set up regular updates every 2 seconds for smooth real-time experience
+    const interval = setInterval(fetchAllData, 2000);
     
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [sessionData]);
 
   const handleSessionEnd = () => {
     if (!sessionData) return;

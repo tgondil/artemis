@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, BarChart3 } from 'lucide-react';
+import { Settings, BarChart3 } from 'lucide-react';
 import GazeCursor from './GazeCursor';
 import EnhancedFlowSyncDashboard from './EnhancedFlowSyncDashboard';
 import { useEyeTraxGazeTracker } from '../hooks/useEyeTraxGazeTracker';
@@ -24,11 +24,14 @@ export default function MainView() {
   const handleToggleTracking = async () => {
     if (isTracking) {
       stopTracking();
+      setShowDashboard(false);
     } else {
       try {
         setIsCalibrating(true);
         await runCalibration(0);
         await startTracking();
+        // Redirect to dashboard after successful calibration
+        setShowDashboard(true);
       } catch (err) {
         console.error('Failed to start tracking:', err);
       } finally {
@@ -41,6 +44,28 @@ export default function MainView() {
     <div className="relative w-full h-screen bg-background overflow-hidden">
       {/* Subtle gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/5" />
+
+      {/* Settings Button - Top Right */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="absolute top-6 right-6 z-20"
+      >
+        <motion.button
+          onClick={() => setShowDashboard(true)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="group relative p-3 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl text-white/90 transition-all duration-300"
+        >
+          <Settings className="w-5 h-5" />
+          {/* Button glow on hover */}
+          <motion.div
+            className="absolute inset-0 rounded-xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+            initial={false}
+          />
+        </motion.button>
+      </motion.div>
 
       {/* Gaze Cursor - The Hero */}
       <AnimatePresence>
@@ -82,71 +107,29 @@ export default function MainView() {
             {isTracking ? 'Tracking your gaze' : 'Follow your focus'}
           </motion.p>
 
-          {/* Button Container */}
-          <div className="flex items-center space-x-6">
-            {/* Main Action Button */}
-            <motion.button
-              onClick={handleToggleTracking}
-              disabled={isCalibrating}
-              className="group relative px-12 py-5 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl text-white/90 font-light text-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="flex items-center space-x-3">
-                {isCalibrating ? (
-                  <>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    >
-                      <Eye className="w-5 h-5" />
-                    </motion.div>
-                    <span>Calibrating...</span>
-                  </>
-                ) : isTracking ? (
-                  <>
-                    <EyeOff className="w-5 h-5" />
-                    <span>Stop Tracking</span>
-                  </>
-                ) : (
-                  <>
-                    <Eye className="w-5 h-5" />
-                    <span>Enable Gaze Tracking</span>
-                  </>
-                )}
-              </div>
-
-              {/* Button glow on hover */}
-              <motion.div
-                className="absolute inset-0 rounded-2xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
-                initial={false}
-              />
-            </motion.button>
-
-            {/* Secondary Action - Open Dashboard */}
-            <motion.button
-              onClick={() => setShowDashboard(true)}
-              className="group relative px-12 py-5 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl text-white/90 font-light text-lg transition-all duration-300"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="flex items-center space-x-3">
-                <BarChart3 className="w-5 h-5" />
-                <span>Open Dashboard</span>
-              </div>
-              {/* Button glow on hover */}
-              <motion.div
-                className="absolute inset-0 rounded-2xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
-                initial={false}
-              />
-            </motion.button>
-          </div>
+          {/* Main Action Button */}
+          <motion.button
+            onClick={handleToggleTracking}
+            disabled={isCalibrating}
+            className="group relative px-12 py-5 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl text-white/90 font-light text-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="flex items-center space-x-3">
+              <BarChart3 className="w-5 h-5" />
+              <span>
+                {isCalibrating ? 'Calibrating...' : isTracking ? 'End Session' : 'Start a Session'}
+              </span>
+            </div>
+            {/* Button glow on hover */}
+            <motion.div
+              className="absolute inset-0 rounded-2xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+              initial={false}
+            />
+          </motion.button>
 
           {/* Error message */}
           <AnimatePresence>

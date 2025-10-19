@@ -581,6 +581,19 @@ function setupChromeMonitorHandlers() {
       return { success: false, error: error.message };
     }
   });
+
+  // Close specific tabs
+  ipcMain.handle('chrome:close-tabs', async (_event, urlsToClose: string[]) => {
+    try {
+      console.log('[Chrome] Closing tabs:', urlsToClose);
+      const result = await monitor.closeTabs(urlsToClose);
+      console.log(`[Chrome] Closed ${result.closedCount} tabs`);
+      return result;
+    } catch (error: any) {
+      console.error('[Chrome] Failed to close tabs:', error);
+      return { success: false, closedCount: 0, error: error.message };
+    }
+  });
   
   console.log('[Chrome] All Chrome monitor handlers registered');
 

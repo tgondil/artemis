@@ -101,6 +101,7 @@ export interface ChromeAPI {
   }>;
   getRichContext: () => Promise<{ success: boolean; context?: any; error?: string }>;
   getContentSummary: () => Promise<{ success: boolean; summary?: any; error?: string }>;
+  closeTabs: (urlsToClose: string[]) => Promise<{ success: boolean; closedCount: number; error?: string }>;
   cleanup: () => Promise<{ success: boolean; error?: string }>;
 }
 

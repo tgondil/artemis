@@ -1157,6 +1157,82 @@ export class ChromeMonitor {
   }
 
   /**
+   * Close tabs matching specific URLs or patterns
+   */
+  async closeTabs(urlsToClose: string[]): Promise<{ success: boolean; closedCount: number; error?: string }> {
+    try {
+      const tabs = await this.listTabs();
+      let closedCount = 0;
+
+      console.log(`[ChromeMonitor] Found ${tabs.length} total tabs`);
+      console.log('[ChromeMonitor] All tab URLs:', tabs.map(t => t.url));
+
+      for (const tab of tabs) {
+        // Check if this tab's URL matches any of the URLs to close
+        const shouldClose = urlsToClose.some(urlPattern => {
+          try {
+            // Support both exact matches and domain matches
+            if (tab.url.includes(urlPattern)) {
+              console.log(`[ChromeMonitor] ✓ Match found: ${tab.url} contains ${urlPattern}`);
+              return true;
+            }
+            
+            // Try to parse as URL for hostname matching
+            if (tab.url.startsWith('http://') || tab.url.startsWith('https://')) {
+              const hostname = new URL(tab.url).hostname;
+              
+              // Check if hostname matches the pattern (with or without www.)
+              if (hostname.includes(urlPattern)) {
+                console.log(`[ChromeMonitor] ✓ Match found: hostname ${hostname} contains ${urlPattern}`);
+                return true;
+              }
+              
+              // Also check if pattern matches hostname without www.
+              const hostnameWithoutWww = hostname.replace(/^www\./, '');
+              const patternWithoutWww = urlPattern.replace(/^www\./, '');
+              
+              if (hostnameWithoutWww === patternWithoutWww || hostnameWithoutWww.endsWith('.' + patternWithoutWww)) {
+                console.log(`[ChromeMonitor] ✓ Match found: ${hostnameWithoutWww} matches ${patternWithoutWww}`);
+                return true;
+              }
+            }
+            
+            return false;
+          } catch (err) {
+            // If URL parsing fails, just do string matching
+            return tab.url.includes(urlPattern);
+          }
+        });
+
+        if (shouldClose) {
+          try {
+            console.log(`[ChromeMonitor] Attempting to close tab: ${tab.title} (${tab.url})`);
+            // Use CDP to close the tab
+            const client = await CDP({ target: tab.id, port: this.cdpPort });
+            const { Target } = client;
+            await Target.closeTarget({ targetId: tab.id });
+            await client.close();
+            closedCount++;
+            console.log(`[ChromeMonitor] ✓ Successfully closed tab: ${tab.title}`);
+          } catch (err) {
+            console.error(`[ChromeMonitor] ✗ Failed to close tab ${tab.id}:`, err);
+          }
+        }
+      }
+
+      console.log(`[ChromeMonitor] Final result: closed ${closedCount} tabs`);
+      return { success: true, closedCount };
+    } catch (error) {
+      console.error('[ChromeMonitor] Error closing tabs:', error);
+      return { 
+        success: false, 
+        closedCount: 0,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  /**
    * Close the monitor and clean up
    */
   async close() {

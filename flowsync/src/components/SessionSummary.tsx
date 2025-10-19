@@ -12,7 +12,10 @@ import {
   Brain,
   CheckCircle,
   AlertCircle,
-  Lightbulb
+  Lightbulb,
+  Activity,
+  Shield,
+  Coffee
 } from 'lucide-react';
 import { SessionData, SessionStats, SessionAchievement } from '../types/session';
 
@@ -284,30 +287,56 @@ export default function SessionSummary({ sessionData, onStartNewSession, onClose
               {/* Secondary Activities */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                  <div className="flex items-center space-x-3 mb-2">
+                  <div className="flex items-center space-x-3 mb-3">
                     <div className="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center">
                       <Target className="w-4 h-4 text-cyan-400" />
                     </div>
-                    <span className="text-white/90 font-medium text-sm">Resources Accessed</span>
+                    <span className="text-white/90 font-medium text-sm">Active Resources</span>
                   </div>
-                  <ul className="space-y-1 text-white/70 text-xs">
-                    <li>• MDN Web Docs</li>
-                    <li>• JavaScript.info</li>
-                    <li>• Code editor</li>
+                  <ul className="space-y-1.5 text-white/70 text-xs">
+                    <li className="flex items-center space-x-2">
+                      <CheckCircle className="w-3 h-3 text-green-400 flex-shrink-0" />
+                      <span>JavaScript.info</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <CheckCircle className="w-3 h-3 text-green-400 flex-shrink-0" />
+                      <span>MDN Web Docs</span>
+                    </li>
                   </ul>
                 </div>
 
                 <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                      <Zap className="w-4 h-4 text-purple-400" />
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                      <Shield className="w-4 h-4 text-orange-400" />
                     </div>
-                    <span className="text-white/90 font-medium text-sm">Key Concepts</span>
+                    <span className="text-white/90 font-medium text-sm">Distractions Removed</span>
                   </div>
-                  <ul className="space-y-1 text-white/70 text-xs">
-                    <li>• Variable declaration (let, const, var)</li>
-                    <li>• String and Number types</li>
-                    <li>• Variable scope</li>
+                  <ul className="space-y-1.5 text-white/50 text-xs">
+                    <li className="flex items-center space-x-2">
+                      <span className="text-orange-400">×</span>
+                      <span className="line-through">Instagram</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="text-orange-400">×</span>
+                      <span className="line-through">Gmail</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="text-orange-400">×</span>
+                      <span className="line-through">YouTube</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="text-orange-400">×</span>
+                      <span className="line-through">LinkedIn</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="text-orange-400">×</span>
+                      <span className="line-through">WebstaurantStore</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="text-orange-400">×</span>
+                      <span className="line-through">Quizlet</span>
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -319,7 +348,7 @@ export default function SessionSummary({ sessionData, onStartNewSession, onClose
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+            className="grid grid-cols-3 gap-4 mb-6"
           >
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-4">
               <div className="flex items-center space-x-2 mb-2">
@@ -339,14 +368,6 @@ export default function SessionSummary({ sessionData, onStartNewSession, onClose
             
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-4">
               <div className="flex items-center space-x-2 mb-2">
-                <Zap className="w-5 h-5 text-cyan-400" />
-                <span className="text-white/70 text-sm">Flow States</span>
-              </div>
-              <div className="text-2xl font-bold text-white">{stats.flowStates}</div>
-            </div>
-            
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
                 <TrendingUp className="w-5 h-5 text-purple-400" />
                 <span className="text-white/70 text-sm">Avg Focus</span>
               </div>
@@ -354,7 +375,7 @@ export default function SessionSummary({ sessionData, onStartNewSession, onClose
             </div>
           </motion.div>
 
-          {/* Achievements */}
+          {/* Artemis Interventions */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -362,94 +383,190 @@ export default function SessionSummary({ sessionData, onStartNewSession, onClose
             className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-6 mb-6"
           >
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
-              <Award className="w-6 h-6" />
-              <span>Achievements Unlocked</span>
+              <Zap className="w-6 h-6" />
+              <span>Artemis Interventions</span>
             </h2>
             
-            {achievements.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {achievements.map((achievement, index) => (
-                  <motion.div
-                    key={achievement.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 + index * 0.1 }}
-                    className={`p-4 rounded-lg border ${getRarityColor(achievement.rarity)}`}
-                  >
-                    <div className="flex items-start space-x-3">
-                      <div className="text-2xl">{achievement.icon}</div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <h3 className="font-semibold text-white">{achievement.title}</h3>
-                          <span className="text-xs font-medium text-white/70">+{achievement.points} pts</span>
-                        </div>
-                        <p className="text-white/70 text-sm">{achievement.description}</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <AlertCircle className="w-12 h-12 text-white/30 mx-auto mb-4" />
-                <p className="text-white/50">No achievements unlocked this session</p>
-                <p className="text-white/30 text-sm">Keep going to unlock your first achievement!</p>
-              </div>
-            )}
-          </motion.div>
+            <div className="space-y-3">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="flex items-start space-x-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg"
+              >
+                <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Activity className="w-4 h-4 text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-blue-400 font-medium text-sm">Session Initialized</p>
+                    <span className="text-blue-400/60 text-xs">0:03</span>
+                  </div>
+                  <p className="text-white/70 text-xs">Detected workspace setup and gathered context from open applications, gaze data, and recent work history</p>
+                </div>
+              </motion.div>
 
-          {/* Insights & Recommendations */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-6 mb-6"
-          >
-            <h2 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
-              <Lightbulb className="w-6 h-6" />
-              <span>Insights & Recommendations</span>
-            </h2>
-            
-            <div className="space-y-4">
-              {stats.flowStates >= 3 && (
-                <div className="flex items-start space-x-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-green-400 mt-0.5" />
-                  <div>
-                    <p className="text-green-400 font-medium">Great flow state management!</p>
-                    <p className="text-white/70 text-sm">You entered flow state {stats.flowStates} times. This shows excellent focus control.</p>
-                  </div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.45 }}
+                className="flex items-start space-x-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg"
+              >
+                <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Target className="w-4 h-4 text-purple-400" />
                 </div>
-              )}
-              
-              {stats.distractions > stats.focusEvents && (
-                <div className="flex items-start space-x-3 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                  <AlertCircle className="w-5 h-5 text-orange-400 mt-0.5" />
-                  <div>
-                    <p className="text-orange-400 font-medium">Consider reducing distractions</p>
-                    <p className="text-white/70 text-sm">You had {stats.distractions} distractions vs {stats.focusEvents} focus events. Try closing unnecessary tabs.</p>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-purple-400 font-medium text-sm">Goal Inference</p>
+                    <span className="text-purple-400/60 text-xs">0:12</span>
                   </div>
+                  <p className="text-white/70 text-xs">Analyzed ongoing tasks and recent documents to identify true goals. Calibration phase initiated</p>
                 </div>
-              )}
-              
-              {stats.consistency >= 70 && (
-                <div className="flex items-start space-x-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-blue-400 mt-0.5" />
-                  <div>
-                    <p className="text-blue-400 font-medium">Excellent consistency!</p>
-                    <p className="text-white/70 text-sm">Your focus consistency was {stats.consistency}%. Keep up the great work!</p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+                className="flex items-start space-x-3 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg"
+              >
+                <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Shield className="w-4 h-4 text-orange-400" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-orange-400 font-medium text-sm">Distraction Control</p>
+                    <span className="text-orange-400/60 text-xs">0:25</span>
                   </div>
+                  <p className="text-white/70 text-xs">Hidden 6 distracting tabs (Instagram, Gmail, YouTube, LinkedIn, WebstaurantStore, Quizlet). Kept JavaScript.info and MDN open for learning</p>
                 </div>
-              )}
-              
-              {stats.duration < 900000 && (
-                <div className="flex items-start space-x-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                  <Lightbulb className="w-5 h-5 text-purple-400 mt-0.5" />
-                  <div>
-                    <p className="text-purple-400 font-medium">Try longer sessions for better results</p>
-                    <p className="text-white/70 text-sm">Sessions over 15 minutes tend to yield better focus and productivity.</p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.55 }}
+                className="flex items-start space-x-3 p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg"
+              >
+                <div className="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-4 h-4 text-cyan-400" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-cyan-400 font-medium text-sm">Engagement Phase</p>
+                    <span className="text-cyan-400/60 text-xs">0:50</span>
                   </div>
+                  <p className="text-white/70 text-xs">Gaze and keystroke rhythm stabilized. Lighting cooling from ~3000K to ~4500K for alertness</p>
                 </div>
-              )}
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 }}
+                className="flex items-start space-x-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg"
+              >
+                <div className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Lightbulb className="w-4 h-4 text-yellow-400" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-yellow-400 font-medium text-sm">Environmental Adaptation</p>
+                    <span className="text-yellow-400/60 text-xs">1:20</span>
+                  </div>
+                  <p className="text-white/70 text-xs">IoT devices synced. Lighting cooling to ~5500K for crisp daylight ambience</p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.65 }}
+                className="flex items-start space-x-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg"
+              >
+                <div className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Shield className="w-4 h-4 text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-red-400 font-medium text-sm">Digital Throttling</p>
+                    <span className="text-red-400/60 text-xs">1:50</span>
+                  </div>
+                  <p className="text-white/70 text-xs">Non-essential network usage throttled. Phone notifications paused</p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.7 }}
+                className="flex items-start space-x-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg"
+              >
+                <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Brain className="w-4 h-4 text-green-400" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-green-400 font-medium text-sm">Peak Focus (Flow State)</p>
+                    <span className="text-green-400/60 text-xs">2:30</span>
+                  </div>
+                  <p className="text-white/70 text-xs">Minimal blink variation, consistent fixation, stable typing cadence. Lighting at ~5600K</p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.75 }}
+                className="flex items-start space-x-3 p-3 bg-orange-600/10 border border-orange-600/20 rounded-lg"
+              >
+                <div className="w-8 h-8 bg-orange-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Coffee className="w-4 h-4 text-orange-500" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-orange-500 font-medium text-sm">Recovery Initiated</p>
+                    <span className="text-orange-500/60 text-xs">3:40</span>
+                  </div>
+                  <p className="text-white/70 text-xs">Early cognitive fatigue detected. Lighting warming to ~3200K with ambient music</p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 }}
+                className="flex items-start space-x-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg"
+              >
+                <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-emerald-400 font-medium text-sm">Session Concluded</p>
+                    <span className="text-emerald-400/60 text-xs">4:30</span>
+                  </div>
+                  <p className="text-white/70 text-xs">Session highlights displayed: flow duration, productivity trends, and focus phases</p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.85 }}
+                className="flex items-start space-x-3 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg"
+              >
+                <div className="w-8 h-8 bg-indigo-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Star className="w-4 h-4 text-indigo-400" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-indigo-400 font-medium text-sm">Cool-Down</p>
+                    <span className="text-indigo-400/60 text-xs">4:50</span>
+                  </div>
+                  <p className="text-white/70 text-xs">Phone connection restored. Welcome back. You had done great.</p>
+                </div>
+              </motion.div>
             </div>
           </motion.div>
 

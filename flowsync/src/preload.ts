@@ -45,6 +45,9 @@ contextBridge.exposeInMainWorld('chromeMonitor', {
   // Get comprehensive content summary for LLM analysis
   getContentSummary: () => ipcRenderer.invoke('chrome:get-content-summary'),
   
+  // Close specific tabs by URL patterns
+  closeTabs: (urlsToClose: string[]) => ipcRenderer.invoke('chrome:close-tabs', urlsToClose),
+  
   // Cleanup old activity data
   cleanup: () => ipcRenderer.invoke('chrome:cleanup'),
 });

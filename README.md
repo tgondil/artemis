@@ -25,7 +25,6 @@
 ![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?logo=framer&logoColor=white)
 ![MediaPipe](https://img.shields.io/badge/MediaPipe-4285F4?logo=google&logoColor=white)
 ![Spotify](https://img.shields.io/badge/Spotify-1DB954?logo=spotify&logoColor=white)
-![Visa](https://img.shields.io/badge/Visa-1A1F71?logo=visa&logoColor=white)
 ![Chrome](https://img.shields.io/badge/Chrome-4285F4?logo=google-chrome&logoColor=white)
 
 </div>
@@ -59,15 +58,13 @@ The system creates a seamless, invisible layer of environmental adaptation that 
 
 ```mermaid
 graph TB
-    A[🧠 FlowSync Core<br/>Electron + React + TypeScript] --> B[🎵 Music Controller<br/>Spotify Web API]
+    A[🧠 Artemis Core<br/>Electron + React + TypeScript] --> B[🎵 Music Controller<br/>Spotify Web API]
     A --> C[💡 Lighting System<br/>WiZ/LIFX Integration]
-    A --> D[💰 Payment Service<br/>Visa Direct + PAAI]
-    A --> E[🌐 Chrome Monitor<br/>DevTools Protocol]
-    A --> F[👁️ Gaze Tracker<br/>MediaPipe + EyeTrax]
+    A --> D[🌐 Chrome Monitor<br/>DevTools Protocol]
+    A --> E[👁️ Gaze Tracker<br/>MediaPipe + EyeTrax]
     
     B --> G[🎧 Spotify<br/>Real-time Audio Control]
     C --> H[💡 Smart Lights<br/>Adaptive Illumination]
-    D --> I[💳 Visa Platform<br/>Focus-based Payments]
     E --> J[📱 Chrome Browser<br/>Tab Management]
     F --> K[📹 Webcam<br/>Eye Tracking]
     
@@ -89,7 +86,7 @@ graph TB
 |-----------|----------------|------------|
 | 👁️ Gaze Data | 🧠 AI Analysis | 🎵 Music Adaptation |
 | 📱 Tab Activity | 🔍 Distraction Detection | 💡 Light Control |
-| ⏱️ Focus Time | 💰 Payment Logic | 💳 Micro-transactions |
+| ⏱️ Focus Time | 💳 Micro-transactions |
 | 🎯 Attention State | 🔄 State Machine | 🌐 Environment Sync |
 
 </div>
@@ -102,19 +99,18 @@ graph TB
 
 | Component | Status | Technology | Description |
 |-----------|--------|------------|-------------|
-| 🧠 **FlowSync Dashboard** | ✅ **Active** | Electron + React + TypeScript | Glassmorphic desktop app with gaze tracking |
+| 🧠 **Artemis Dashboard** | ✅ **Active** | Electron + React + TypeScript | Glassmorphic desktop app with gaze tracking |
 | 🎵 **Music Controller** | ✅ **Active** | Python + Spotify API | Real-time audio adaptation |
 | 💡 **Lighting System** | ✅ **Active** | Python + WiZ/LIFX | Neuroergonomic light control |
 | 🌐 **Chrome Monitor** | ✅ **Active** | Chrome DevTools Protocol | Intelligent tab management |
-| 💰 **Payment Service** | ✅ **Active** | Node.js + Visa API | Focus-based microtransactions |
 | 🔄 **Orchestration** | ✅ **Active** | Python + AsyncIO | Central event coordination |
 
 </div>
 
 ---
 
-### 1️⃣ **FlowSync Dashboard** 
-📍 `flowsync/` | ![Status](https://img.shields.io/badge/status-active-success.svg)
+### 1️⃣ **Artemis Dashboard** 
+📍 `Artemis/` | ![Status](https://img.shields.io/badge/status-active-success.svg)
 
 <div align="center">
 
@@ -188,7 +184,7 @@ Spotify Web API + OAuth2 Authentication
 ---
 
 ### 4️⃣ **Chrome Tab Management**
-📍 `flowsync/src/services/ChromeMonitor.ts`
+📍 `Artemis/src/services/ChromeMonitor.ts`
 
 **Intelligent distraction detection and tab control** using Chrome DevTools Protocol.
 
@@ -208,28 +204,7 @@ Spotify Web API + OAuth2 Authentication
 
 ---
 
-### 5️⃣ **Focus-Based Payment System**
-📍 `payments-service/`
-
-**Visa Developer Platform integration** for real-time focus-based microtransactions.
-
-**Features:**
-- ✅ **Visa Direct + PAAI integration** for real-time payments
-- ✅ **Focus-as-currency ecosystem** through adaptive financial feedback
-- ✅ **Secure OAuth2 + certificate-based authentication**
-- ✅ **Transaction logging** and balance tracking
-- ✅ **Intelligent retry + rollback mechanisms**
-- ✅ **Stake → micro-refund → pool settle** workflow
-
-**Payment Flow:**
-1. **Stake Creation** - User commits focus time with financial stake
-2. **Micro-refunds** - Earn money for sustained focus periods
-3. **Pool Settlement** - Remaining balance goes to community pool
-4. **Real-time Processing** - Instant Visa Direct transfers
-
----
-
-### 6️⃣ **Central Orchestration Engine**
+### 5️⃣ **Central Orchestration Engine**
 📍 `main.py`
 
 **Asynchronous event bus** linking all focus signals to environmental controls.
@@ -265,7 +240,6 @@ Spotify Web API + OAuth2 Authentication
 | ![Chrome](https://img.shields.io/badge/Chrome-DevTools%20Enabled-orange.svg) | Latest | Required |
 | ![Spotify](https://img.shields.io/badge/Spotify-Developer%20Account-green.svg) | API Access | Required |
 | ![WiZ](https://img.shields.io/badge/WiZ-Smart%20Lights-optional-yellow.svg) | Compatible | Optional |
-| ![Visa](https://img.shields.io/badge/Visa-Developer%20Account-purple.svg) | API Access | Optional |
 
 </div>
 
@@ -273,9 +247,9 @@ Spotify Web API + OAuth2 Authentication
 
 <div align="center">
 
-#### 1️⃣ **Clone and Setup FlowSync**
+#### 1️⃣ **Clone and Setup Artemis**
 ```bash
-cd flowsync
+cd Artemis
 npm install
 npm run dev
 ```
@@ -287,19 +261,10 @@ pip install -r requirements.txt
 python adaptiveLights.py
 ```
 
-#### 3️⃣ **Configure Payments (Optional)**
+#### 3️⃣ **Launch the System**
 ```bash
-cd payments-service
-cp env.example .env
-# Add your Visa credentials
-pnpm install
-pnpm dev
-```
-
-#### 4️⃣ **Launch the System**
-```bash
-# Terminal 1: FlowSync
-cd flowsync && npm start
+# Terminal 1: Artemis
+cd Artemis && npm start
 
 # Terminal 2: Music Controller  
 cd adaptiveLights && python adaptiveLights.py
@@ -316,7 +281,7 @@ cd payments-service && pnpm dev
 
 | Step | Action | Result |
 |------|--------|--------|
-| 1️⃣ | **Launch FlowSync** | Glassmorphic UI appears |
+| 1️⃣ | **Launch Artemis** | Glassmorphic UI appears |
 | 2️⃣ | **Enable Gaze Tracking** | Camera activates, calibration begins |
 | 3️⃣ | **Connect Services** | Spotify, lights, and Chrome integrate |
 | 4️⃣ | **Start Focus Session** | Environment adapts to your attention |
@@ -419,7 +384,7 @@ stateDiagram-v2
 
 ### Environment Variables
 
-**FlowSync:**
+**Artemis:**
 ```bash
 # Chrome DevTools
 CHROME_DEBUG_PORT=9222
@@ -432,16 +397,6 @@ SPOTIFY_REDIRECT_URI=http://localhost:3000/callback
 # Lighting Control
 WIZ_LIGHT_IP=192.168.1.100
 LIFX_TOKEN=your_lifx_token
-```
-
-**Payments Service:**
-```bash
-# Visa Developer Platform
-VISA_API_KEY=your_api_key
-VISA_SHARED_SECRET=your_shared_secret
-VISA_BASE_URL=https://sandbox.api.visa.com
-VISA_CERT_PATH=./certs/cert.pem
-VISA_KEY_PATH=./certs/key.pem
 ```
 
 ---
@@ -514,7 +469,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 - **MediaPipe** for gaze tracking capabilities
 - **Spotify** for music API integration
-- **Visa Developer Platform** for payment processing
 - **WiZ** for smart lighting control
 - **Chrome DevTools Protocol** for browser integration
 

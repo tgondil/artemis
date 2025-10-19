@@ -45,8 +45,66 @@ export interface GazeUpdate {
   error?: string;
 }
 
+// Chrome Monitor API types
+export interface ChromeTab {
+  metadata: {
+    id: string;
+    title: string;
+    url: string;
+    type: string;
+    faviconUrl?: string;
+  };
+  content?: {
+    text: string;
+    headings: string[];
+    codeBlocks: number;
+    scrollPosition: number;
+    scrollHeight: number;
+    visibleText: string;
+  };
+  activity: {
+    timeSpent: number;
+    lastActive: number;
+    isActive: boolean;
+    networkActive: boolean;
+  };
+}
+
+export interface ChromeSnapshot {
+  timestamp: number;
+  tabs: ChromeTab[];
+  activeTabs: ChromeTab[];
+  totalTabs: number;
+}
+
+export interface ChromeAPI {
+  checkAvailable: () => Promise<{
+    success: boolean;
+    available: boolean;
+    error?: string;
+  }>;
+  getSnapshot: (options?: { extractContent: boolean }) => Promise<{
+    success: boolean;
+    snapshot?: ChromeSnapshot;
+    error?: string;
+  }>;
+  listTabs: () => Promise<{
+    success: boolean;
+    tabs?: Array<{
+      id: string;
+      title: string;
+      url: string;
+      type: string;
+      faviconUrl?: string;
+    }>;
+    error?: string;
+  }>;
+  cleanup: () => Promise<{ success: boolean; error?: string }>;
+}
+
 declare global {
   interface Window {
     eyetrax: EyeTraxAPI;
+    chrome: ChromeAPI;
   }
 }

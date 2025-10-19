@@ -24,3 +24,19 @@ contextBridge.exposeInMainWorld('eyetrax', {
     ipcRenderer.removeAllListeners('eyetrax:gaze-update');
   },
 });
+
+// Expose Chrome Monitor API to renderer
+contextBridge.exposeInMainWorld('chrome', {
+  // Check if Chrome with remote debugging is available
+  checkAvailable: () => ipcRenderer.invoke('chrome:check-available'),
+  
+  // Get full snapshot with tab content
+  getSnapshot: (options?: { extractContent: boolean }) => 
+    ipcRenderer.invoke('chrome:get-snapshot', options),
+  
+  // Get just tab metadata (faster)
+  listTabs: () => ipcRenderer.invoke('chrome:list-tabs'),
+  
+  // Cleanup old activity data
+  cleanup: () => ipcRenderer.invoke('chrome:cleanup'),
+});

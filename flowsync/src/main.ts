@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { spawn, ChildProcess } from 'child_process';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
+import { getChromeMonitor, ChromeSnapshot } from './services/ChromeMonitor';
 
 // Declare Vite environment variables
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
@@ -69,6 +70,7 @@ class EyeTraxService {
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
+    // Handle stdout data
     this.process.stdout?.on('data', (data) => {
       const lines = data.toString().split('\n');
       for (const line of lines) {
@@ -82,29 +84,71 @@ class EyeTraxService {
       }
     });
 
+    // Handle stderr data
     this.process.stderr?.on('data', (data) => {
-      console.log('[Python]', data.toString().trim());
+      try {
+        console.log('[Python]', data.toString().trim());
+      } catch (e) {
+        // Ignore EPIPE errors when logging
+      }
     });
 
-    this.process.on('exit', (code) => {
-      console.log(`Python process exited with code ${code}`);
-      this.process = null;
-      this.isReady = false;
+    // Handle process exit
+    this.process.on('exit', (code, signal) => {
+      console.log(`Python process exited with code ${code} and signal ${signal}`);
+      this.cleanup();
     });
 
+    // Handle process errors
     this.process.on('error', (error) => {
       console.error('Python process error:', error);
+      this.cleanup();
+    });
+
+    // Handle broken pipe errors
+    this.process.stdin?.on('error', (error: any) => {
+      if (error.code === 'EPIPE') {
+        console.warn('Python process stdin pipe broken (process may have exited)');
+        this.cleanup();
+      } else {
+        console.error('Python stdin error:', error);
+      }
+    });
+
+    this.process.stdout?.on('error', (error: any) => {
+      if (error.code !== 'EPIPE') {
+        console.error('Python stdout error:', error);
+      }
+    });
+
+    this.process.stderr?.on('error', (error: any) => {
+      if (error.code !== 'EPIPE') {
+        console.error('Python stderr error:', error);
+      }
     });
 
     await this.readyPromise;
     console.log('✅ EyeTrax service ready');
   }
 
+  private cleanup(): void {
+    if (this.process) {
+      // Remove all listeners to prevent memory leaks
+      this.process.removeAllListeners();
+      this.process.stdout?.removeAllListeners();
+      this.process.stderr?.removeAllListeners();
+      this.process.stdin?.removeAllListeners();
+      
+      this.process = null;
+      this.isReady = false;
+      this.callbacks.clear();
+    }
+  }
+
   stop(): void {
     if (this.process) {
       this.process.kill();
-      this.process = null;
-      this.isReady = false;
+      this.cleanup();
     }
   }
 
@@ -127,9 +171,14 @@ class EyeTraxService {
     }
   }
 
-  private async sendCommand(command: string, params: any = {}, timeoutMs: number = 10000): Promise<any> {
+  async sendCommand(command: string, params: any = {}, timeoutMs: number = 10000): Promise<any> {
     if (!this.process || !this.isReady) {
       throw new Error('EyeTrax service not ready');
+    }
+
+    // Check if process is still alive and stdin is writable
+    if (this.process.killed || !this.process.stdin?.writable) {
+      throw new Error('EyeTrax process has exited');
     }
 
     const requestId = this.requestId++;
@@ -145,14 +194,32 @@ class EyeTraxService {
       });
 
       // Set timeout (60 seconds for calibration, 10 seconds for other commands)
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         if (this.callbacks.has(requestId)) {
           this.callbacks.delete(requestId);
           reject(new Error(`Command timeout after ${timeoutMs}ms`));
         }
       }, timeoutMs);
 
-      this.process?.stdin?.write(JSON.stringify(cmd) + '\n');
+      try {
+        this.process!.stdin!.write(JSON.stringify(cmd) + '\n', (error) => {
+          if (error) {
+            clearTimeout(timeout);
+            this.callbacks.delete(requestId);
+            // Check if it's an EPIPE error (process died)
+            if ((error as any).code === 'EPIPE') {
+              reject(new Error('EyeTrax process has exited unexpectedly'));
+              this.cleanup();
+            } else {
+              reject(error);
+            }
+          }
+        });
+      } catch (error: any) {
+        clearTimeout(timeout);
+        this.callbacks.delete(requestId);
+        reject(error);
+      }
     });
   }
 
@@ -332,8 +399,63 @@ function setupEyeTraxHandlers() {
   });
 }
 
+// ============================================================================
+// Chrome Monitor Setup
+// ============================================================================
+
+function setupChromeMonitorHandlers() {
+  const monitor = getChromeMonitor(9222);
+
+  // Check if Chrome with remote debugging is available
+  ipcMain.handle('chrome:check-available', async () => {
+    try {
+      const available = await monitor.isAvailable();
+      return { success: true, available };
+    } catch (error: any) {
+      console.error('[Chrome] Availability check failed:', error);
+      return { success: false, available: false, error: error.message };
+    }
+  });
+
+  // Get full Chrome snapshot with tab metadata and content
+  ipcMain.handle('chrome:get-snapshot', async (_event, options?: { extractContent: boolean }) => {
+    try {
+      const snapshot: ChromeSnapshot = await monitor.getSnapshot(
+        options || { extractContent: true }
+      );
+      return { success: true, snapshot };
+    } catch (error: any) {
+      console.error('[Chrome] Failed to get snapshot:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get just tab metadata (faster, no content extraction)
+  ipcMain.handle('chrome:list-tabs', async () => {
+    try {
+      const tabs = await monitor.listTabs();
+      return { success: true, tabs };
+    } catch (error: any) {
+      console.error('[Chrome] Failed to list tabs:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Cleanup old activity data
+  ipcMain.handle('chrome:cleanup', async () => {
+    try {
+      monitor.cleanup();
+      return { success: true };
+    } catch (error: any) {
+      console.error('[Chrome] Cleanup failed:', error);
+      return { success: false, error: error.message };
+    }
+  });
+}
+
 // Register handlers immediately
 setupEyeTraxHandlers();
+setupChromeMonitorHandlers();
 
 app.on('ready', async () => {
   // Start EyeTrax Python service FIRST

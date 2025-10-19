@@ -44,10 +44,13 @@
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.22-rc.20250304",
+    "bufferutil": "^4.0.9",
+    "chrome-remote-interface": "^0.33.3",
     "electron-squirrel-startup": "^1.0.1",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.546.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "utf-8-validate": "^5.0.10"
   }
 }

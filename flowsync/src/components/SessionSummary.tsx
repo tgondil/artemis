@@ -242,33 +242,74 @@ export default function SessionSummary({ sessionData, onStartNewSession, onClose
             </div>
           </motion.div>
 
-          {/* Performance Overview */}
+          {/* Session Activities */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.15 }}
             className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-6 mb-6"
           >
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
-              <BarChart3 className="w-6 h-6" />
-              <span>Performance Overview</span>
+              <Brain className="w-6 h-6" />
+              <span>What You Accomplished</span>
             </h2>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-2">{performance.icon}</div>
-                <div className={`text-lg font-semibold ${performance.color}`}>{performance.rating}</div>
-                <div className="text-white/70 text-sm">Overall Performance</div>
+            <div className="space-y-4">
+              {/* Main Activity */}
+              <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-5">
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <span className="text-2xl">📚</span>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-white mb-2">Studying JavaScript</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="w-4 h-4 text-green-400" />
+                        <span className="text-white/80 text-sm">Learning about variables</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="w-4 h-4 text-green-400" />
+                        <span className="text-white/80 text-sm">Understanding data types</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-white">{formatTime(stats.duration)}</div>
+                    <div className="text-white/50 text-xs">Time spent</div>
+                  </div>
+                </div>
               </div>
-              
-              <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-2">{stats.productivityScore}%</div>
-                <div className="text-white/70 text-sm">Productivity Score</div>
-              </div>
-              
-              <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-2">{totalPoints}</div>
-                <div className="text-white/70 text-sm">Points Earned</div>
+
+              {/* Secondary Activities */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                      <Target className="w-4 h-4 text-cyan-400" />
+                    </div>
+                    <span className="text-white/90 font-medium text-sm">Resources Accessed</span>
+                  </div>
+                  <ul className="space-y-1 text-white/70 text-xs">
+                    <li>• MDN Web Docs</li>
+                    <li>• JavaScript.info</li>
+                    <li>• Code editor</li>
+                  </ul>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                      <Zap className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <span className="text-white/90 font-medium text-sm">Key Concepts</span>
+                  </div>
+                  <ul className="space-y-1 text-white/70 text-xs">
+                    <li>• Variable declaration (let, const, var)</li>
+                    <li>• String and Number types</li>
+                    <li>• Variable scope</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </motion.div>

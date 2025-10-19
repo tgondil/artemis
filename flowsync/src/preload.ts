@@ -1,5 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
+console.log('[Preload] Loading preload script...');
+
 // Expose EyeTrax API to renderer (using native EyeTrax calibration)
 contextBridge.exposeInMainWorld('eyetrax', {
   // Native EyeTrax 9-point calibration (fullscreen UI)
@@ -26,7 +28,7 @@ contextBridge.exposeInMainWorld('eyetrax', {
 });
 
 // Expose Chrome Monitor API to renderer
-contextBridge.exposeInMainWorld('chrome', {
+contextBridge.exposeInMainWorld('chromeMonitor', {
   // Check if Chrome with remote debugging is available
   checkAvailable: () => ipcRenderer.invoke('chrome:check-available'),
   
@@ -39,4 +41,23 @@ contextBridge.exposeInMainWorld('chrome', {
   
   // Cleanup old activity data
   cleanup: () => ipcRenderer.invoke('chrome:cleanup'),
+});
+
+// Expose Window Monitor API to renderer
+contextBridge.exposeInMainWorld('flowsyncWindowAPI', {
+  // Start/stop window tracking
+  startTracking: () => ipcRenderer.invoke('window:start-tracking'),
+  stopTracking: () => ipcRenderer.invoke('window:stop-tracking'),
+  
+  // Get window data
+  getSnapshot: () => ipcRenderer.invoke('window:get-snapshot'),
+  getAppTime: () => ipcRenderer.invoke('window:get-app-time'),
+  getHistory: () => ipcRenderer.invoke('window:get-history'),
+  
+  // Check app status
+  isAppActive: (appName: string) => ipcRenderer.invoke('window:is-app-active', appName),
+  getCurrentTitle: () => ipcRenderer.invoke('window:get-current-title'),
+  
+  // Cleanup
+  cleanup: () => ipcRenderer.invoke('window:cleanup'),
 });

@@ -102,9 +102,55 @@ export interface ChromeAPI {
   cleanup: () => Promise<{ success: boolean; error?: string }>;
 }
 
+// Window Monitor API types
+export interface WindowInfo {
+  title: string;
+  owner: {
+    name: string;
+    processId: number;
+    path: string;
+  };
+  bounds: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  url?: string;
+  memoryUsage?: number;
+}
+
+export interface WindowHistoryEntry {
+  window: WindowInfo;
+  timestamp: number;
+  duration: number;
+}
+
+export interface WindowSnapshot {
+  timestamp: number;
+  activeWindow: WindowInfo | null;
+  recentHistory: WindowHistoryEntry[];
+  appTimeSpent: Record<string, number>;
+}
+
+export interface WindowAPI {
+  startTracking: () => Promise<{ success: boolean; error?: string }>;
+  stopTracking: () => Promise<{ success: boolean; error?: string }>;
+  getSnapshot: () => Promise<{ success: boolean; snapshot?: WindowSnapshot; error?: string }>;
+  getAppTime: () => Promise<{ success: boolean; appTime?: Record<string, number>; error?: string }>;
+  getHistory: () => Promise<{ success: boolean; history?: WindowHistoryEntry[]; error?: string }>;
+  isAppActive: (appName: string) => Promise<{ success: boolean; isActive?: boolean; error?: string }>;
+  getCurrentTitle: () => Promise<{ success: boolean; title?: string | null; error?: string }>;
+  cleanup: () => Promise<{ success: boolean; error?: string }>;
+}
+
 declare global {
   interface Window {
     eyetrax: EyeTraxAPI;
-    chrome: ChromeAPI;
+    chromeMonitor: ChromeAPI;
+    flowsyncWindowAPI: WindowAPI;
+    electronAPI: {
+      invoke: (channel: string, ...args: any[]) => Promise<any>;
+    };
   }
 }

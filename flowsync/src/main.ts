@@ -3,6 +3,7 @@ import { spawn, ChildProcess } from 'child_process';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { getChromeMonitor, ChromeSnapshot } from './services/ChromeMonitor';
+import { getWindowMonitor, WindowSnapshot } from './services/WindowMonitor';
 
 // Declare Vite environment variables
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
@@ -400,6 +401,102 @@ function setupEyeTraxHandlers() {
 }
 
 // ============================================================================
+// Window Monitor Setup
+// ============================================================================
+
+function setupWindowMonitorHandlers() {
+  const monitor = getWindowMonitor(2000); // Poll every 2 seconds
+
+  // Start window tracking
+  ipcMain.handle('window:start-tracking', async () => {
+    try {
+      monitor.startPolling();
+      return { success: true };
+    } catch (error: any) {
+      console.error('[Window] Failed to start tracking:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Stop window tracking
+  ipcMain.handle('window:stop-tracking', async () => {
+    try {
+      monitor.stopPolling();
+      return { success: true };
+    } catch (error: any) {
+      console.error('[Window] Failed to stop tracking:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get current window snapshot
+  ipcMain.handle('window:get-snapshot', async () => {
+    try {
+      const snapshot: WindowSnapshot = monitor.getSnapshot();
+      return { success: true, snapshot };
+    } catch (error: any) {
+      console.error('[Window] Failed to get snapshot:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get app time spent
+  ipcMain.handle('window:get-app-time', async () => {
+    try {
+      const appTime = monitor.getAppTimeSpent();
+      return { success: true, appTime };
+    } catch (error: any) {
+      console.error('[Window] Failed to get app time:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get window history
+  ipcMain.handle('window:get-history', async () => {
+    try {
+      const history = monitor.getHistory();
+      return { success: true, history };
+    } catch (error: any) {
+      console.error('[Window] Failed to get history:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Check if specific app is active
+  ipcMain.handle('window:is-app-active', async (_event, appName: string) => {
+    try {
+      const isActive = monitor.isAppActive(appName);
+      return { success: true, isActive };
+    } catch (error: any) {
+      console.error('[Window] Failed to check app status:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get current window title
+  ipcMain.handle('window:get-current-title', async () => {
+    try {
+      const title = monitor.getCurrentWindowTitle();
+      return { success: true, title };
+    } catch (error: any) {
+      console.error('[Window] Failed to get current title:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Cleanup window monitor
+  ipcMain.handle('window:cleanup', async () => {
+    try {
+      monitor.cleanup();
+      return { success: true };
+    } catch (error: any) {
+      console.error('[Window] Cleanup failed:', error);
+      return { success: false, error: error.message };
+    }
+  });
+}
+
+// ============================================================================
 // Chrome Monitor Setup
 // ============================================================================
 
@@ -455,6 +552,7 @@ function setupChromeMonitorHandlers() {
 
 // Register handlers immediately
 setupEyeTraxHandlers();
+setupWindowMonitorHandlers();
 setupChromeMonitorHandlers();
 
 app.on('ready', async () => {

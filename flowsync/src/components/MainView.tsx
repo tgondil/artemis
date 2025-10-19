@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 import GazeCursor from './GazeCursor';
+import WindowTracker from './WindowTracker';
 import { useEyeTraxGazeTracker } from '../hooks/useEyeTraxGazeTracker';
 
 export default function MainView() {
@@ -180,6 +181,16 @@ export default function MainView() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Window Tracker - Top Left */}
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
+        className="fixed top-8 left-8 z-20"
+      >
+        <WindowTracker />
+      </motion.div>
 
       {/* Minimal Metrics - Bottom Right (optional) */}
       <AnimatePresence>

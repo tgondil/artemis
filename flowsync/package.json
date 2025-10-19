@@ -1,6 +1,6 @@
 {
-  "name": "flowsync",
-  "productName": "FlowSync",
+  "name": "artemis",
+  "productName": "Artemis",
   "version": "1.0.0",
   "description": "Attention-aware environment orchestration for deep focus",
   "main": ".vite/build/main.js",

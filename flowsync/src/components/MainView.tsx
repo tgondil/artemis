@@ -69,7 +69,7 @@ export default function MainView() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
           >
-            FlowSync
+            Artemis
           </motion.h1>
 
           {/* Subtitle */}

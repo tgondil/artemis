@@ -169,7 +169,7 @@ export default function SessionTracker({ onSessionStart, onSessionEnd }: Session
           >
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-4xl font-extralight text-white/90 tracking-tight mb-2">🎯 FlowSync Session</h1>
+                <h1 className="text-4xl font-extralight text-white/90 tracking-tight mb-2">🎯 Artemis Session</h1>
                 <p className="text-xl font-light text-white/50">Track your focus and productivity in real-time</p>
                 {isActive && (
                   <div className="flex items-center space-x-4 mt-4">

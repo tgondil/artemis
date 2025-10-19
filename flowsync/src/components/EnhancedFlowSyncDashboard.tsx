@@ -221,8 +221,8 @@ export default function EnhancedFlowSyncDashboard({ onClose }: EnhancedFlowSyncD
     console.log('[EnhancedDashboard] Fetching data immediately...');
     fetchAllData();
 
-    // Set up regular updates every 5 minutes
-    const interval = setInterval(fetchAllData, 300000);
+    // Set up regular updates every 30 seconds for real-time experience
+    const interval = setInterval(fetchAllData, 30000);
     
     return () => {
       clearInterval(interval);
@@ -316,7 +316,7 @@ export default function EnhancedFlowSyncDashboard({ onClose }: EnhancedFlowSyncD
           >
             <div className="flex justify-between items-center">
               <div>
-                 <h1 className="text-4xl font-extralight text-white/90 tracking-tight mb-2">🎯 Enhanced FlowSync Dashboard</h1>
+                 <h1 className="text-4xl font-extralight text-white/90 tracking-tight mb-2">🎯 Artemis Dashboard</h1>
                  <p className="text-xl font-light text-white/50">Track your focus, optimize your workspace, and achieve flow state</p>
                  {isSessionActive && (
                    <div className="flex items-center space-x-4 mt-4">
@@ -328,11 +328,6 @@ export default function EnhancedFlowSyncDashboard({ onClose }: EnhancedFlowSyncD
                        Duration: {formatTime(currentTime)}
                      </div>
                    </div>
-                 )}
-                 {lastRefresh && (
-                   <p className="text-white/50 text-sm mt-1">
-                     Last updated: {lastRefresh.toLocaleTimeString()}
-                   </p>
                  )}
               </div>
               <div className="flex items-center space-x-3">
@@ -389,13 +384,6 @@ export default function EnhancedFlowSyncDashboard({ onClose }: EnhancedFlowSyncD
                     />
                   </motion.button>
                 )}
-                <button 
-                  onClick={fetchAllData}
-                  disabled={loading}
-                  className="px-4 py-2 bg-white/10 rounded hover:bg-white/20 text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Loading...' : 'Refresh'}
-                </button>
               </div>
             </div>
           </motion.div>
@@ -418,47 +406,6 @@ export default function EnhancedFlowSyncDashboard({ onClose }: EnhancedFlowSyncD
             </motion.div>
           )}
 
-          {/* Session Stats */}
-          {isSessionActive && sessionData && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
-            >
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-4">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Target className="w-5 h-5 text-blue-400" />
-                  <span className="text-white/70 text-sm">Focus Events</span>
-                </div>
-                <div className="text-2xl font-bold text-white">{getSessionStats()?.focusEvents || 0}</div>
-              </div>
-              
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-4">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Trophy className="w-5 h-5 text-purple-400" />
-                  <span className="text-white/70 text-sm">Achievements</span>
-                </div>
-                <div className="text-2xl font-bold text-white">{getSessionStats()?.achievements || 0}</div>
-              </div>
-              
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-4">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Zap className="w-5 h-5 text-cyan-400" />
-                  <span className="text-white/70 text-sm">Flow States</span>
-                </div>
-                <div className="text-2xl font-bold text-white">{getSessionStats()?.flowStates || 0}</div>
-              </div>
-              
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-4">
-                <div className="flex items-center space-x-2 mb-2">
-                  <BarChart3 className="w-5 h-5 text-green-400" />
-                  <span className="text-white/70 text-sm">Productivity</span>
-                </div>
-                <div className="text-2xl font-bold text-white">{getSessionStats()?.productivityScore || 0}%</div>
-              </div>
-            </motion.div>
-          )}
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">

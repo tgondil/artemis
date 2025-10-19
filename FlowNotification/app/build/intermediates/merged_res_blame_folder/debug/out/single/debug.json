@@ -1,0 +1,22 @@
+[
+    {
+        "merged": "/Users/devanshkhandelwal/.gradle/daemon/8.4/com.flowsync.flownotification.app-merged_res-45:/xml_backup_rules.xml.flat",
+        "source": "/Users/devanshkhandelwal/.gradle/daemon/8.4/com.flowsync.flownotification.app-main-47:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "/Users/devanshkhandelwal/.gradle/daemon/8.4/com.flowsync.flownotification.app-merged_res-45:/xml_network_security_config.xml.flat",
+        "source": "/Users/devanshkhandelwal/.gradle/daemon/8.4/com.flowsync.flownotification.app-main-47:/xml/network_security_config.xml"
+    },
+    {
+        "merged": "com.flowsync.flownotification.app-merged_res-45:/xml_backup_rules.xml.flat",
+        "source": "com.flowsync.flownotification.app-main-47:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "com.flowsync.flownotification.app-merged_res-45:/xml_data_extraction_rules.xml.flat",
+        "source": "com.flowsync.flownotification.app-main-47:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "/Users/devanshkhandelwal/.gradle/daemon/8.4/com.flowsync.flownotification.app-merged_res-45:/xml_data_extraction_rules.xml.flat",
+        "source": "/Users/devanshkhandelwal/.gradle/daemon/8.4/com.flowsync.flownotification.app-main-47:/xml/data_extraction_rules.xml"
+    }
+]

@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.flowsync.flowbridge.app-merged_res-44:/xml_backup_rules.xml.flat",
+        "source": "com.flowsync.flowbridge.app-main-46:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "com.flowsync.flowbridge.app-merged_res-44:/xml_data_extraction_rules.xml.flat",
+        "source": "com.flowsync.flowbridge.app-main-46:/xml/data_extraction_rules.xml"
+    }
+]

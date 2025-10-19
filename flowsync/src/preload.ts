@@ -39,6 +39,12 @@ contextBridge.exposeInMainWorld('chromeMonitor', {
   // Get just tab metadata (faster)
   listTabs: () => ipcRenderer.invoke('chrome:list-tabs'),
   
+  // Get rich context for LLM reasoning
+  getRichContext: () => ipcRenderer.invoke('chrome:get-rich-context'),
+  
+  // Get comprehensive content summary for LLM analysis
+  getContentSummary: () => ipcRenderer.invoke('chrome:get-content-summary'),
+  
   // Cleanup old activity data
   cleanup: () => ipcRenderer.invoke('chrome:cleanup'),
 });

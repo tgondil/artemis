@@ -21,6 +21,28 @@ interface TabContent {
   scrollPosition: number;
   scrollHeight: number;
   visibleText: string; // First 500 chars of main content
+  // Enhanced content extraction
+  pageTitle: string;
+  metaDescription: string;
+  keywords: string[];
+  mainContent: string; // Extracted main content area
+  links: Array<{text: string, url: string}>;
+  images: Array<{alt: string, src: string}>;
+  semanticInfo: {
+    articleTitle?: string;
+    author?: string;
+    publishDate?: string;
+    readingTime?: number;
+    topics: string[];
+    sentiment: 'positive' | 'negative' | 'neutral';
+  };
+  technicalInfo: {
+    framework?: string; // React, Vue, etc.
+    language?: string; // Programming language detected
+    hasCode: boolean;
+    hasForms: boolean;
+    hasVideos: boolean;
+  };
 }
 
 interface TabActivity {
@@ -176,13 +198,21 @@ export class ChromeMonitor {
       // Filter for page tabs only (exclude extensions, background pages, etc.)
       const tabs = targets
         .filter((t: any) => t.type === 'page' && !t.url.startsWith('chrome://'))
-        .map((t: any) => ({
-          id: t.id,
-          title: t.title || 'Untitled',
-          url: t.url,
-          type: t.type,
-          faviconUrl: t.faviconUrl,
-        }));
+        .map((t: any) => {
+          const context = analyzeTabContext(t.url, t.title || 'Untitled');
+          return {
+            id: t.id,
+            title: t.title || 'Untitled',
+            url: t.url,
+            type: t.type,
+            faviconUrl: t.faviconUrl,
+            domain: context.domain || new URL(t.url).hostname,
+            category: context.category || 'other',
+            isWorkRelated: context.isWorkRelated || false,
+            projectContext: context.projectContext,
+            contentType: context.contentType || 'other'
+          };
+        });
 
       return tabs;
     } catch (error: any) {
@@ -201,7 +231,7 @@ export class ChromeMonitor {
       client = await CDP({ target: tabId, port: this.cdpPort });
       const { Runtime } = client;
 
-      // Execute script in page context to extract content
+      // Execute comprehensive content extraction script
       const result = await Runtime.evaluate({
         expression: `
           (() => {
@@ -212,32 +242,129 @@ export class ChromeMonitor {
                 document.querySelector('main') ||
                 document.querySelector('[role="main"]') ||
                 document.querySelector('.content') ||
+                document.querySelector('#content') ||
                 document.body;
 
+              // Extract basic page info
+              const pageTitle = document.title || '';
+              const metaDescription = document.querySelector('meta[name="description"]')?.content || '';
+              const keywords = Array.from(document.querySelectorAll('meta[name="keywords"]'))
+                .map(meta => meta.content?.split(',').map(k => k.trim()))
+                .flat()
+                .filter(Boolean);
+
               // Extract headings
-              const headings = Array.from(document.querySelectorAll('h1, h2, h3'))
+              const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'))
                 .map(h => h.textContent?.trim())
                 .filter(Boolean)
-                .slice(0, 10); // Limit to first 10 headings
+                .slice(0, 15);
 
-              // Count code blocks
-              const codeBlocks = document.querySelectorAll('pre, code, .highlight').length;
+              // Extract links
+              const links = Array.from(document.querySelectorAll('a[href]'))
+                .slice(0, 20)
+                .map(link => ({
+                  text: link.textContent?.trim() || '',
+                  url: link.href
+                }))
+                .filter(link => link.text && link.url);
 
-              // Get scroll position
+              // Extract images
+              const images = Array.from(document.querySelectorAll('img[src]'))
+                .slice(0, 10)
+                .map(img => ({
+                  alt: img.alt || '',
+                  src: img.src
+                }));
+
+              // Extract main content text
+              const text = mainContent.innerText || '';
+              const mainContentText = text.slice(0, 10000); // Increased limit for LLM
+              const visibleText = text.slice(0, 1000); // First 1000 chars
+
+              // Count various elements
+              const codeBlocks = document.querySelectorAll('pre, code, .highlight, .code').length;
+              const hasCode = codeBlocks > 0;
+              const hasForms = document.querySelectorAll('form').length > 0;
+              const hasVideos = document.querySelectorAll('video, iframe[src*="youtube"], iframe[src*="vimeo"]').length > 0;
+
+              // Detect framework/technology
+              let framework = '';
+              if (document.querySelector('[data-reactroot], [data-react-helmet]')) framework = 'React';
+              else if (document.querySelector('[data-vue]')) framework = 'Vue';
+              else if (document.querySelector('[data-ng-app]')) framework = 'Angular';
+              else if (document.querySelector('[data-svelte]')) framework = 'Svelte';
+
+              // Detect programming language in code blocks
+              let language = '';
+              const codeElements = document.querySelectorAll('code, pre');
+              for (const code of codeElements) {
+                const className = code.className;
+                if (className.includes('javascript') || className.includes('js')) language = 'JavaScript';
+                else if (className.includes('python') || className.includes('py')) language = 'Python';
+                else if (className.includes('java')) language = 'Java';
+                else if (className.includes('cpp') || className.includes('c++')) language = 'C++';
+                else if (className.includes('css')) language = 'CSS';
+                else if (className.includes('html')) language = 'HTML';
+                if (language) break;
+              }
+
+              // Extract semantic information
+              const articleTitle = document.querySelector('article h1, .article-title, .post-title')?.textContent?.trim();
+              const author = document.querySelector('[rel="author"], .author, .byline')?.textContent?.trim();
+              const publishDate = document.querySelector('time, .date, .published')?.textContent?.trim();
+              
+              // Estimate reading time (250 words per minute)
+              const wordCount = text.split(/\\s+/).length;
+              const readingTime = Math.ceil(wordCount / 250);
+
+              // Extract topics from headings and content
+              const topics = [...headings, ...text.split(/\\s+/).slice(0, 100)]
+                .filter(word => word.length > 3)
+                .map(word => word.toLowerCase())
+                .filter(word => !['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'its', 'may', 'new', 'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did', 'man', 'new', 'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did', 'man'].includes(word))
+                .slice(0, 10);
+
+              // Simple sentiment analysis (basic keyword matching)
+              const positiveWords = ['good', 'great', 'excellent', 'amazing', 'wonderful', 'fantastic', 'love', 'best', 'perfect', 'awesome'];
+              const negativeWords = ['bad', 'terrible', 'awful', 'horrible', 'hate', 'worst', 'disappointing', 'poor', 'wrong', 'error'];
+              const positiveCount = positiveWords.reduce((count, word) => count + (text.toLowerCase().includes(word) ? 1 : 0), 0);
+              const negativeCount = negativeWords.reduce((count, word) => count + (text.toLowerCase().includes(word) ? 1 : 0), 0);
+              let sentiment = 'neutral';
+              if (positiveCount > negativeCount) sentiment = 'positive';
+              else if (negativeCount > positiveCount) sentiment = 'negative';
+
+              // Get scroll info
               const scrollPosition = window.scrollY;
               const scrollHeight = document.body.scrollHeight;
 
-              // Extract visible text (limit to avoid huge payloads)
-              const text = mainContent.innerText || '';
-              const visibleText = text.slice(0, 500); // First 500 chars
-
               return {
-                text: text.slice(0, 5000), // Limit to 5000 chars
+                text: mainContentText,
                 headings,
                 codeBlocks,
                 scrollPosition,
                 scrollHeight,
                 visibleText,
+                pageTitle,
+                metaDescription,
+                keywords,
+                mainContent: mainContentText,
+                links,
+                images,
+                semanticInfo: {
+                  articleTitle,
+                  author,
+                  publishDate,
+                  readingTime,
+                  topics,
+                  sentiment
+                },
+                technicalInfo: {
+                  framework,
+                  language,
+                  hasCode,
+                  hasForms,
+                  hasVideos
+                }
               };
             } catch (e) {
               return {
@@ -247,6 +374,21 @@ export class ChromeMonitor {
                 scrollPosition: 0,
                 scrollHeight: 0,
                 visibleText: '',
+                pageTitle: '',
+                metaDescription: '',
+                keywords: [],
+                mainContent: '',
+                links: [],
+                images: [],
+                semanticInfo: {
+                  topics: [],
+                  sentiment: 'neutral'
+                },
+                technicalInfo: {
+                  hasCode: false,
+                  hasForms: false,
+                  hasVideos: false
+                },
                 error: e.message
               };
             }
@@ -294,6 +436,12 @@ export class ChromeMonitor {
         lastActive: now,
         isActive,
         networkActive: false,
+        focusDuration: 0,
+        switchCount: 0,
+        scrollEvents: 0,
+        clickEvents: 0,
+        dwellTime: 0,
+        engagementScore: 0,
       });
     }
 
@@ -313,6 +461,12 @@ export class ChromeMonitor {
       lastActive: Date.now(),
       isActive: false,
       networkActive: false,
+      focusDuration: 0,
+      switchCount: 0,
+      scrollEvents: 0,
+      clickEvents: 0,
+      dwellTime: 0,
+      engagementScore: 0,
     };
   }
 
@@ -342,10 +496,24 @@ export class ChromeMonitor {
       const isActive = tabs.indexOf(tabMeta) === 0;
       this.updateTabActivity(tabMeta.id, isActive);
 
+      // Analyze tab context for rich information
+      const context = analyzeTabContext(tabMeta.url, tabMeta.title);
+      const enhancedMetadata = {
+        ...tabMeta,
+        ...context
+      };
+
+      // Get activity data and calculate engagement score
+      const activity = this.getTabActivity(tabMeta.id);
+      const engagementScore = calculateEngagementScore(activity);
+      
       chromeTabs.push({
-        metadata: tabMeta,
+        metadata: enhancedMetadata,
         content,
-        activity: this.getTabActivity(tabMeta.id),
+        activity: {
+          ...activity,
+          engagementScore
+        },
       });
     }
 
@@ -356,6 +524,229 @@ export class ChromeMonitor {
       tabs: chromeTabs,
       activeTabs,
       totalTabs: chromeTabs.length,
+    };
+  }
+
+  /**
+   * Get comprehensive content summary for LLM analysis
+   */
+  async getContentSummary(): Promise<{
+    activeTabContent: TabContent | null;
+    contentSummary: {
+      totalTabs: number;
+      contentTypes: Record<string, number>;
+      topics: string[];
+      languages: string[];
+      frameworks: string[];
+      readingTime: number;
+      hasCode: boolean;
+      hasVideos: boolean;
+      hasForms: boolean;
+    };
+    llmContext: {
+      currentPage: {
+        title: string;
+        description: string;
+        topics: string[];
+        sentiment: string;
+        readingTime: number;
+        hasCode: boolean;
+        language?: string;
+        framework?: string;
+      };
+      sessionContext: {
+        primaryTopics: string[];
+        contentFocus: string;
+        technicalLevel: 'beginner' | 'intermediate' | 'advanced';
+        workRelated: boolean;
+      };
+    };
+  }> {
+    const snapshot = await this.getSnapshot({ extractContent: true });
+    const activeTab = snapshot.activeTabs[0];
+    
+    // Analyze content across all tabs
+    const contentTypes: Record<string, number> = {};
+    const allTopics: string[] = [];
+    const languages: string[] = [];
+    const frameworks: string[] = [];
+    let totalReadingTime = 0;
+    let hasCode = false;
+    let hasVideos = false;
+    let hasForms = false;
+    
+    snapshot.tabs.forEach(tab => {
+      if (tab.content) {
+        // Content type analysis
+        const contentType = tab.metadata.contentType;
+        contentTypes[contentType] = (contentTypes[contentType] || 0) + 1;
+        
+        // Collect topics
+        if (tab.content.semanticInfo?.topics) {
+          allTopics.push(...tab.content.semanticInfo.topics);
+        }
+        
+        // Technical info
+        if (tab.content.technicalInfo?.language) {
+          languages.push(tab.content.technicalInfo.language);
+        }
+        if (tab.content.technicalInfo?.framework) {
+          frameworks.push(tab.content.technicalInfo.framework);
+        }
+        
+        // Reading time
+        if (tab.content.semanticInfo?.readingTime) {
+          totalReadingTime += tab.content.semanticInfo.readingTime;
+        }
+        
+        // Technical features
+        if (tab.content.technicalInfo?.hasCode) hasCode = true;
+        if (tab.content.technicalInfo?.hasVideos) hasVideos = true;
+        if (tab.content.technicalInfo?.hasForms) hasForms = true;
+      }
+    });
+    
+    // Get unique topics and frameworks
+    const uniqueTopics = [...new Set(allTopics)].slice(0, 10);
+    const uniqueLanguages = [...new Set(languages)];
+    const uniqueFrameworks = [...new Set(frameworks)];
+    
+    // Determine technical level
+    let technicalLevel: 'beginner' | 'intermediate' | 'advanced' = 'beginner';
+    if (uniqueLanguages.length > 2 || uniqueFrameworks.length > 1) {
+      technicalLevel = 'advanced';
+    } else if (uniqueLanguages.length > 0 || uniqueFrameworks.length > 0) {
+      technicalLevel = 'intermediate';
+    }
+    
+    // Determine content focus
+    const workRelatedTabs = snapshot.tabs.filter(tab => tab.metadata.isWorkRelated);
+    const workRelated = workRelatedTabs.length > snapshot.tabs.length * 0.5;
+    
+    return {
+      activeTabContent: activeTab?.content || null,
+      contentSummary: {
+        totalTabs: snapshot.tabs.length,
+        contentTypes,
+        topics: uniqueTopics,
+        languages: uniqueLanguages,
+        frameworks: uniqueFrameworks,
+        readingTime: totalReadingTime,
+        hasCode,
+        hasVideos,
+        hasForms
+      },
+      llmContext: {
+        currentPage: {
+          title: activeTab?.content?.pageTitle || activeTab?.metadata.title || 'Unknown',
+          description: activeTab?.content?.metaDescription || '',
+          topics: activeTab?.content?.semanticInfo?.topics || [],
+          sentiment: activeTab?.content?.semanticInfo?.sentiment || 'neutral',
+          readingTime: activeTab?.content?.semanticInfo?.readingTime || 0,
+          hasCode: activeTab?.content?.technicalInfo?.hasCode || false,
+          language: activeTab?.content?.technicalInfo?.language,
+          framework: activeTab?.content?.technicalInfo?.framework
+        },
+        sessionContext: {
+          primaryTopics: uniqueTopics,
+          contentFocus: workRelated ? 'work' : 'personal',
+          technicalLevel,
+          workRelated
+        }
+      }
+    };
+  }
+
+  /**
+   * Get rich context data for LLM reasoning
+   */
+  async getRichContext(): Promise<ChromeRichContext> {
+    const snapshot = await this.getSnapshot();
+    const now = Date.now();
+    const sessionDuration = now - this.sessionStartTime;
+    
+    // Calculate browsing patterns
+    const totalTabs = snapshot.tabs.length;
+    const workRelatedTabs = snapshot.tabs.filter(tab => tab.metadata.isWorkRelated);
+    const workRelatedRatio = totalTabs > 0 ? workRelatedTabs.length / totalTabs : 0;
+    
+    // Calculate category distribution
+    const categoryDistribution: Record<string, number> = {};
+    snapshot.tabs.forEach(tab => {
+      const category = tab.metadata.category;
+      categoryDistribution[category] = (categoryDistribution[category] || 0) + tab.activity.timeSpent;
+    });
+    
+    // Get most engaged tabs
+    const mostEngagedTabs = snapshot.tabs
+      .sort((a, b) => b.activity.engagementScore - a.activity.engagementScore)
+      .slice(0, 5)
+      .map(tab => ({
+        url: tab.metadata.url,
+        engagementScore: tab.activity.engagementScore
+      }));
+    
+    // Calculate average dwell time
+    const totalTimeSpent = snapshot.tabs.reduce((sum, tab) => sum + tab.activity.timeSpent, 0);
+    const averageTabDwellTime = totalTabs > 0 ? totalTimeSpent / totalTabs : 0;
+    
+    // Calculate distraction level (based on non-work tabs)
+    const distractionLevel = Math.round((1 - workRelatedRatio) * 100);
+    
+    // Determine browsing mode
+    const activeTabs = snapshot.activeTabs;
+    const primaryDomain = activeTabs.length > 0 ? activeTabs[0].metadata.domain : 'unknown';
+    
+    let browsingMode: ChromeRichContext['currentBrowsingContext']['browsingMode'] = 'mixed';
+    if (workRelatedTabs.length > totalTabs * 0.8) {
+      browsingMode = 'development';
+    } else if (categoryDistribution.social > categoryDistribution.development) {
+      browsingMode = 'social';
+    } else if (categoryDistribution.entertainment > categoryDistribution.development) {
+      browsingMode = 'entertainment';
+    } else if (categoryDistribution.research > categoryDistribution.development) {
+      browsingMode = 'research';
+    }
+    
+    // Calculate focus stability (time spent in same tab)
+    const focusStability = activeTabs.length > 0 
+      ? Math.min(activeTabs[0].activity.focusDuration / 300, 1) * 100 // 5 minutes = 100%
+      : 0;
+    
+    // Calculate behavioral insights
+    const attentionSpan = Math.round(averageTabDwellTime);
+    const multitaskingLevel = Math.min(totalTabs / 10, 1) * 100; // 10+ tabs = 100%
+    const productivityScore = Math.round(workRelatedRatio * 100);
+    
+    // Identify distraction triggers
+    const distractionTriggers: string[] = [];
+    if (categoryDistribution.social > 0) distractionTriggers.push('Social media');
+    if (categoryDistribution.entertainment > 0) distractionTriggers.push('Entertainment');
+    if (categoryDistribution.news > 0) distractionTriggers.push('News');
+    
+    return {
+      currentBrowsingContext: {
+        activeTabs,
+        primaryDomain,
+        browsingMode,
+        focusStability
+      },
+      sessionPatterns: {
+        sessionDuration,
+        totalTabsOpened: totalTabs,
+        tabSwitchingFrequency: this.tabSwitchCount / (sessionDuration / 60000), // switches per minute
+        averageTabDwellTime,
+        mostEngagedTabs,
+        categoryDistribution,
+        workRelatedRatio,
+        distractionLevel
+      },
+      behavioralInsights: {
+        attentionSpan,
+        multitaskingLevel,
+        productivityScore,
+        distractionTriggers
+      }
     };
   }
 

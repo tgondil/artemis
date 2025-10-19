@@ -512,7 +512,9 @@ function setupWindowMonitorHandlers() {
 // ============================================================================
 
 function setupChromeMonitorHandlers() {
+  console.log('[Chrome] Setting up Chrome monitor handlers...');
   const monitor = getChromeMonitor(9222);
+  console.log('[Chrome] Chrome monitor initialized');
 
   // Check if Chrome with remote debugging is available
   ipcMain.handle('chrome:check-available', async () => {
@@ -548,6 +550,34 @@ function setupChromeMonitorHandlers() {
       return { success: false, error: error.message };
     }
   });
+
+  // Get rich context data for LLM reasoning
+  ipcMain.handle('chrome:get-rich-context', async () => {
+    try {
+      console.log('[Chrome] Getting rich context...');
+      const richContext = await monitor.getRichContext();
+      console.log('[Chrome] Rich context retrieved successfully');
+      return { success: true, context: richContext };
+    } catch (error: any) {
+      console.error('[Chrome] Failed to get rich context:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get comprehensive content summary for LLM analysis
+  ipcMain.handle('chrome:get-content-summary', async () => {
+    try {
+      console.log('[Chrome] Getting content summary...');
+      const contentSummary = await monitor.getContentSummary();
+      console.log('[Chrome] Content summary retrieved successfully');
+      return { success: true, summary: contentSummary };
+    } catch (error: any) {
+      console.error('[Chrome] Failed to get content summary:', error);
+      return { success: false, error: error.message };
+    }
+  });
+  
+  console.log('[Chrome] All Chrome monitor handlers registered');
 
   // Cleanup old activity data
   ipcMain.handle('chrome:cleanup', async () => {

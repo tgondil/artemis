@@ -4,6 +4,8 @@ import { Eye, EyeOff } from 'lucide-react';
 import GazeCursor from './GazeCursor';
 import WindowTracker from './WindowTracker';
 import RichContextTest from './RichContextTest';
+import ChromeContextTest from './ChromeContextTest';
+import ContentAnalysisTest from './ContentAnalysisTest';
 import { useEyeTraxGazeTracker } from '../hooks/useEyeTraxGazeTracker';
 
 export default function MainView() {
@@ -195,6 +197,12 @@ export default function MainView() {
 
       {/* Rich Context Test - Bottom Right */}
       <RichContextTest />
+      
+      {/* Chrome Context Test - Top Right */}
+      <ChromeContextTest />
+      
+      {/* Content Analysis Test - Bottom Left */}
+      <ContentAnalysisTest />
 
       {/* Minimal Metrics - Bottom Right (optional) */}
       <AnimatePresence>

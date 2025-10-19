@@ -448,8 +448,11 @@ export class LLMReasoningEngine {
         **DECISION LOGIC CONSTRAINTS:**
         Before deciding to hide or keep any tab, you MUST apply these rules:
 
-        1. **Keep all tabs** that are related to the user's current task, project, or work mode.
-        2. **Only hide tabs if** they are completely unrelated to the current task.
+        1. **Keep all tabs** whose titles, URLs, or topics contain any keywords related to the user's currentTask, projectContext, or workMode.
+        2. **Only hide tabs if**:
+           - They are inactive for >5 minutes, AND
+           - Their content type = entertainment OR unrelated social media, AND
+           - They are NOT documentation, reference, or educational material FOR the user's task.
         3. **When in doubt, KEEP the tab visible.**
 
         Return ONLY a valid JSON response with this exact structure:
@@ -1004,27 +1007,27 @@ Based on the current context, historical patterns, and temporal awareness, provi
 
 **Example 1: Learning JavaScript**
 - Task: "Learning JavaScript"
-- Tab: "YouTube - JavaScript Crash Course for Beginners" → KEEP (related to learning JavaScript)
-- Tab: "MDN JavaScript Documentation" → KEEP (related to learning JavaScript)
-- Tab: "Stack Overflow - JavaScript questions" → KEEP (related to learning JavaScript)
-- Tab: "YouTube Music" → HIDE (completely unrelated to JavaScript learning)
-- Tab: "Reddit /r/javascriptmemes" → HIDE (completely unrelated to JavaScript learning)
+- Tab: "YouTube - JavaScript Crash Course for Beginners" → KEEP (educational video for learning)
+- Tab: "MDN JavaScript Documentation" → KEEP (official documentation for learning)
+- Tab: "Stack Overflow - JavaScript questions" → KEEP (reference for learning)
+- Tab: "YouTube Music" → HIDE (unrelated entertainment + unused for 2 hours)
+- Tab: "Reddit /r/javascriptmemes" → HIDE (distraction + unused for 1 hour)
 
 **Example 2: React Development**
 - Task: "React Development"
-- Tab: "React Documentation" → KEEP (related to React development)
-- Tab: "GitHub - React project" → KEEP (related to React development)
-- Tab: "Stack Overflow - React useEffect" → KEEP (related to React development)
-- Tab: "YouTube React Tutorial" → KEEP (related to React development)
-- Tab: "Facebook News Feed" → HIDE (completely unrelated to React development)
+- Tab: "React Documentation" → KEEP (essential documentation)
+- Tab: "GitHub - React project" → KEEP (code repository)
+- Tab: "Stack Overflow - React useEffect" → KEEP (reference for development)
+- Tab: "YouTube React Tutorial" → KEEP (educational for development)
+- Tab: "Facebook News Feed" → HIDE (social media distraction + unused for 3 hours)
 
 **Example 3: Research Task**
 - Task: "Research AI Ethics"
-- Tab: "ArXiv - AI Ethics Paper" → KEEP (related to AI ethics research)
-- Tab: "Medium - AI Ethics Blog" → KEEP (related to AI ethics research)
-- Tab: "Google Scholar" → KEEP (related to AI ethics research)
-- Tab: "Twitter AI Ethics Thread" → KEEP (related to AI ethics research)
-- Tab: "Netflix" → HIDE (completely unrelated to AI ethics research)
+- Tab: "ArXiv - AI Ethics Paper" → KEEP (research paper)
+- Tab: "Medium - AI Ethics Blog" → KEEP (research article)
+- Tab: "Google Scholar" → KEEP (research tool)
+- Tab: "Twitter AI Ethics Thread" → KEEP (research discussion)
+- Tab: "Netflix" → HIDE (entertainment distraction + unused for 4 hours)
 
 ### Analysis Guidelines:
 - **Analyze actual content purpose** - what is this tab actually for?
@@ -1146,10 +1149,15 @@ Content Summary: "${tab.contentSummary || 'N/A'}"
 
 Based on the examples above and the actual content, analyze this tab:
 1. **Content Purpose**: What is this tab actually for? (learning, reference, entertainment, communication, research)
-2. **Task Relevance**: How does this tab relate to the current task "${windowContext.sessionContext.primaryActivity || 'Unknown'}"?
-3. **Decision**: Should this tab be KEPT or HIDDEN? 
-   - **KEEP**: If related to the current task in any way
-   - **HIDE**: Only if completely unrelated to the current task
+2. **Task Relevance**: How does this tab support the current task "${windowContext.sessionContext.primaryActivity || 'Unknown'}"?
+3. **Educational Value**: If the task is learning, is this educational content?
+4. **Reference Value**: If the task is development/research, is this reference material?
+5. **Time Analysis**: Has this tab been inactive for a long time? (Consider hiding only if unused for >30 minutes)
+6. **Usage Pattern**: What does the usage pattern tell us? (focused, brief_visit, deep_engagement, etc.)
+7. **Distraction Assessment**: Is this actively distracting from the current task?
+8. **Decision**: Should this tab be KEPT or HIDDEN? 
+   - **KEEP**: If related to task, educational, reference material
+   - **HIDE**: Only if completely unrelated OR unused for extended time (>5 minutes)
 `).join('\n')}
 
 ## Window Type Distribution

@@ -99,6 +99,8 @@ export interface ChromeAPI {
     }>;
     error?: string;
   }>;
+  getRichContext: () => Promise<{ success: boolean; context?: any; error?: string }>;
+  getContentSummary: () => Promise<{ success: boolean; summary?: any; error?: string }>;
   cleanup: () => Promise<{ success: boolean; error?: string }>;
 }
 

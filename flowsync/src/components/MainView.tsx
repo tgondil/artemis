@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, BarChart3 } from 'lucide-react';
 import GazeCursor from './GazeCursor';
 import WindowTracker from './WindowTracker';
-import FlowSyncDashboard from './FlowSyncDashboard';
+import EnhancedFlowSyncDashboard from './EnhancedFlowSyncDashboard';
 import { useEyeTraxGazeTracker } from '../hooks/useEyeTraxGazeTracker';
 
 export default function MainView() {
@@ -125,6 +125,22 @@ export default function MainView() {
             />
           </motion.button>
 
+          {/* Secondary Action - Start Focus Session */}
+          <motion.button
+            onClick={() => setShowDashboard(true)}
+            className="group relative px-8 py-3 bg-green-500/10 hover:bg-green-500/20 backdrop-blur-xl border border-green-500/30 rounded-xl text-green-400 font-medium text-sm transition-all duration-300 mt-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4" />
+              <span>Start Focus Session</span>
+            </div>
+          </motion.button>
+
           {/* Error message */}
           <AnimatePresence>
             {error && (
@@ -207,8 +223,8 @@ export default function MainView() {
             setShowDashboard(!showDashboard);
             console.log('[MainView] Dashboard state set to:', !showDashboard);
           }}
-          className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-200 text-white"
-          title="Open FlowSync Dashboard"
+          className="p-3 bg-green-500/20 backdrop-blur-xl border border-green-500/30 rounded-lg hover:bg-green-500/30 transition-all duration-200 text-green-400"
+          title="Open Enhanced FlowSync Dashboard"
         >
           <BarChart3 size={20} />
         </button>
@@ -257,12 +273,12 @@ export default function MainView() {
         </motion.div>
       )}
 
-      {/* FlowSync Dashboard */}
+      {/* Enhanced FlowSync Dashboard */}
       <AnimatePresence>
         {showDashboard && (
           <>
-            {console.log('[MainView] Rendering FlowSyncDashboard')}
-            <FlowSyncDashboard />
+            {console.log('[MainView] Rendering EnhancedFlowSyncDashboard')}
+            <EnhancedFlowSyncDashboard />
           </>
         )}
       </AnimatePresence>

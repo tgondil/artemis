@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BarChart3, 
@@ -12,12 +12,12 @@ import {
   Activity,
   TrendingUp,
   Award,
-  Lightbulb
+  Lightbulb,
+  ArrowLeft
 } from 'lucide-react';
-import SessionTracker from './SessionTracker';
 import FocusGraph from './FocusGraph';
 import SessionSummary from './SessionSummary';
-import { SessionData } from '../types/session';
+import { SessionData, SessionEvent } from '../types/session';
 
 interface DashboardData {
   windowContext: any;
@@ -28,17 +28,138 @@ interface DashboardData {
   insights: any;
 }
 
-export default function EnhancedFlowSyncDashboard() {
+interface EnhancedFlowSyncDashboardProps {
+  onClose?: () => void;
+}
+
+export default function EnhancedFlowSyncDashboard({ onClose }: EnhancedFlowSyncDashboardProps = {}) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-  const [showSessionTracker, setShowSessionTracker] = useState(false);
   const [showSessionSummary, setShowSessionSummary] = useState(false);
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [isSessionActive, setIsSessionActive] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   console.log('[EnhancedDashboard] EnhancedFlowSyncDashboard component mounted');
+
+  // Initialize session data
+  const initializeSession = (): SessionData => ({
+    startTime: Date.now(),
+    endTime: Date.now(),
+    duration: 0,
+    events: [],
+    achievements: [],
+    focusSessions: [],
+    totalFocusTime: 0,
+    productivityScore: 0,
+    flowStates: []
+  });
+
+  // Add event to session
+  const addEvent = (type: SessionEvent['type'], value: number, label: string, description?: string, color: string = '#6b7280') => {
+    if (!sessionData) return;
+    
+    const event: SessionEvent = {
+      id: `${type}_${Date.now()}`,
+      timestamp: Date.now() - sessionData.startTime,
+      type,
+      value,
+      label,
+      description,
+      color
+    };
+    
+    setSessionData(prev => prev ? {
+      ...prev,
+      events: [...prev.events, event]
+    } : null);
+  };
+
+  // Start session automatically when dashboard opens
+  useEffect(() => {
+    const newSession = initializeSession();
+    setSessionData(newSession);
+    setIsSessionActive(true);
+    
+    // Add initial event
+    addEvent('focus_start', 100, 'Session Started', 'FlowSync session began', '#4ade80');
+  }, []);
+
+  // Simulate focus events (in real implementation, these would come from actual tracking)
+  useEffect(() => {
+    if (!isSessionActive || !sessionData) return;
+    
+    const eventInterval = setInterval(() => {
+      const random = Math.random();
+      
+      if (random < 0.1) {
+        // Focus session start
+        addEvent('focus_start', Math.random() * 100, 'Deep Focus', 'Entered focused work state', '#10b981');
+      } else if (random < 0.15) {
+        // Task switch
+        addEvent('task_switch', Math.random() * 50, 'Task Switch', 'Switched to new task', '#f59e0b');
+      } else if (random < 0.2) {
+        // Distraction
+        addEvent('distraction', Math.random() * 30, 'Distraction', 'Brief distraction detected', '#ef4444');
+      } else if (random < 0.25) {
+        // Achievement
+        const achievements = [
+          'Completed task milestone',
+          'Maintained focus for 15 minutes',
+          'Reached flow state',
+          'Productivity streak achieved'
+        ];
+        const achievement = achievements[Math.floor(Math.random() * achievements.length)];
+        addEvent('achievement', 100, achievement, 'Great work!', '#8b5cf6');
+      } else if (random < 0.3) {
+        // Flow state
+        addEvent('flow_state', Math.random() * 100, 'Flow State', 'Entered optimal flow state', '#06b6d4');
+      }
+    }, 5000); // Add event every 5 seconds
+    
+    return () => clearInterval(eventInterval);
+  }, [isSessionActive, sessionData]);
+
+  // Update current time
+  useEffect(() => {
+    if (!isSessionActive || !sessionData) return;
+    
+    intervalRef.current = setInterval(() => {
+      setCurrentTime(Date.now() - sessionData.startTime);
+    }, 1000);
+    
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isSessionActive, sessionData]);
+
+  const formatTime = (ms: number) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const getSessionStats = () => {
+    if (!sessionData) return null;
+    
+    const focusEvents = sessionData.events.filter(e => e.type === 'focus_start').length;
+    const achievements = sessionData.events.filter(e => e.type === 'achievement').length;
+    const distractions = sessionData.events.filter(e => e.type === 'distraction').length;
+    const flowStates = sessionData.events.filter(e => e.type === 'flow_state').length;
+    
+    return {
+      focusEvents,
+      achievements,
+      distractions,
+      flowStates,
+      productivityScore: Math.min(100, (focusEvents * 20) + (achievements * 15) - (distractions * 5))
+    };
+  };
 
   const fetchAllData = async () => {
     setLoading(true);
@@ -96,47 +217,45 @@ export default function EnhancedFlowSyncDashboard() {
   };
 
   useEffect(() => {
-    // Wait 15 seconds before initial data fetch to avoid startup LLM calls
-    const initialTimeout = setTimeout(() => {
-      console.log('[EnhancedDashboard] Initial 15-second delay completed, fetching data...');
-      fetchAllData();
-    }, 15000);
+    // Fetch data immediately when component mounts
+    console.log('[EnhancedDashboard] Fetching data immediately...');
+    fetchAllData();
 
-    // Set up regular updates every 5 minutes (only after initial delay)
+    // Set up regular updates every 5 minutes
     const interval = setInterval(fetchAllData, 300000);
     
     return () => {
-      clearTimeout(initialTimeout);
       clearInterval(interval);
     };
   }, []);
 
-  const handleSessionStart = () => {
-    setIsSessionActive(true);
-    setShowSessionTracker(true);
-  };
-
-  const handleSessionEnd = (sessionData: SessionData) => {
-    setIsSessionActive(false);
-    // Ensure endTime is set
-    const completedSessionData = {
+  const handleSessionEnd = () => {
+    if (!sessionData) return;
+    
+    const finalSession = {
       ...sessionData,
-      endTime: sessionData.endTime || Date.now()
+      endTime: Date.now(),
+      duration: Date.now() - sessionData.startTime
     };
-    setSessionData(completedSessionData);
+    
+    setIsSessionActive(false);
+    setSessionData(finalSession);
     setShowSessionSummary(true);
-    setShowSessionTracker(false);
+    
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
   };
 
   const handleStartNewSession = () => {
     setShowSessionSummary(false);
-    setSessionData(null);
-    setShowSessionTracker(true);
+    const newSession = initializeSession();
+    setSessionData(newSession);
     setIsSessionActive(true);
-  };
-
-  const handleCloseSessionTracker = () => {
-    setShowSessionTracker(false);
+    setCurrentTime(0);
+    
+    // Add initial event
+    addEvent('focus_start', 100, 'Session Started', 'FlowSync session began', '#4ade80');
   };
 
   const handleCloseSessionSummary = () => {
@@ -197,24 +316,79 @@ export default function EnhancedFlowSyncDashboard() {
           >
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">🎯 Enhanced FlowSync Dashboard</h1>
-                <p className="text-white/70">Track your focus, optimize your workspace, and achieve flow state</p>
-                {lastRefresh && (
-                  <p className="text-white/50 text-sm mt-1">
-                    Last updated: {lastRefresh.toLocaleTimeString()}
-                  </p>
-                )}
+                 <h1 className="text-4xl font-extralight text-white/90 tracking-tight mb-2">🎯 Enhanced FlowSync Dashboard</h1>
+                 <p className="text-xl font-light text-white/50">Track your focus, optimize your workspace, and achieve flow state</p>
+                 {isSessionActive && (
+                   <div className="flex items-center space-x-4 mt-4">
+                     <div className="flex items-center space-x-2">
+                       <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                       <span className="text-green-400 text-sm font-medium">Session Active</span>
+                     </div>
+                     <div className="text-white/70 text-sm">
+                       Duration: {formatTime(currentTime)}
+                     </div>
+                   </div>
+                 )}
+                 {lastRefresh && (
+                   <p className="text-white/50 text-sm mt-1">
+                     Last updated: {lastRefresh.toLocaleTimeString()}
+                   </p>
+                 )}
               </div>
               <div className="flex items-center space-x-3">
-                <motion.button
-                  onClick={handleSessionStart}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center space-x-2 px-6 py-3 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-lg text-green-400 font-medium transition-all duration-200"
-                >
-                  <Play className="w-5 h-5" />
-                  <span>Start Focus Session</span>
-                </motion.button>
+                {onClose && (
+                  <motion.button
+                    onClick={onClose}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="group relative px-6 py-3 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl text-white/90 font-light text-sm transition-all duration-300"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <ArrowLeft className="w-4 h-4" />
+                      <span>Back</span>
+                    </div>
+                    {/* Button glow on hover */}
+                    <motion.div
+                      className="absolute inset-0 rounded-xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+                      initial={false}
+                    />
+                  </motion.button>
+                )}
+                {!isSessionActive ? (
+                  <motion.button
+                    onClick={handleStartNewSession}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="group relative px-8 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl text-white/90 font-light text-lg transition-all duration-300"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Play className="w-5 h-5" />
+                      <span>Start Focus Session</span>
+                    </div>
+                    {/* Button glow on hover */}
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+                      initial={false}
+                    />
+                  </motion.button>
+                ) : (
+                  <motion.button
+                    onClick={handleSessionEnd}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="group relative px-8 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl text-white/90 font-light text-lg transition-all duration-300"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Square className="w-5 h-5" />
+                      <span>End Session</span>
+                    </div>
+                    {/* Button glow on hover */}
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+                      initial={false}
+                    />
+                  </motion.button>
+                )}
                 <button 
                   onClick={fetchAllData}
                   disabled={loading}
@@ -225,6 +399,66 @@ export default function EnhancedFlowSyncDashboard() {
               </div>
             </div>
           </motion.div>
+
+          {/* Real-time Focus Graph */}
+          {isSessionActive && sessionData && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="mb-6"
+            >
+              <FocusGraph 
+                isActive={isSessionActive}
+                sessionStartTime={sessionData.startTime}
+                onDataUpdate={(data) => {
+                  // Handle real-time data updates if needed
+                }}
+              />
+            </motion.div>
+          )}
+
+          {/* Session Stats */}
+          {isSessionActive && sessionData && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+            >
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Target className="w-5 h-5 text-blue-400" />
+                  <span className="text-white/70 text-sm">Focus Events</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{getSessionStats()?.focusEvents || 0}</div>
+              </div>
+              
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Trophy className="w-5 h-5 text-purple-400" />
+                  <span className="text-white/70 text-sm">Achievements</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{getSessionStats()?.achievements || 0}</div>
+              </div>
+              
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Zap className="w-5 h-5 text-cyan-400" />
+                  <span className="text-white/70 text-sm">Flow States</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{getSessionStats()?.flowStates || 0}</div>
+              </div>
+              
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <BarChart3 className="w-5 h-5 text-green-400" />
+                  <span className="text-white/70 text-sm">Productivity</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{getSessionStats()?.productivityScore || 0}%</div>
+              </div>
+            </motion.div>
+          )}
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -490,16 +724,6 @@ export default function EnhancedFlowSyncDashboard() {
           </div>
         </div>
       </div>
-
-      {/* Session Tracker Modal */}
-      <AnimatePresence>
-        {showSessionTracker && (
-          <SessionTracker
-            onSessionStart={handleSessionStart}
-            onSessionEnd={handleSessionEnd}
-          />
-        )}
-      </AnimatePresence>
 
       {/* Session Summary Modal */}
       <AnimatePresence>

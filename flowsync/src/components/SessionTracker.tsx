@@ -18,6 +18,7 @@ export default function SessionTracker({ onSessionStart, onSessionEnd }: Session
   // Initialize session data
   const initializeSession = (): SessionData => ({
     startTime: Date.now(),
+    endTime: Date.now(),
     duration: 0,
     events: [],
     achievements: [],
@@ -168,8 +169,8 @@ export default function SessionTracker({ onSessionStart, onSessionEnd }: Session
           >
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">🎯 FlowSync Session</h1>
-                <p className="text-white/70">Track your focus and productivity in real-time</p>
+                <h1 className="text-4xl font-extralight text-white/90 tracking-tight mb-2">🎯 FlowSync Session</h1>
+                <p className="text-xl font-light text-white/50">Track your focus and productivity in real-time</p>
                 {isActive && (
                   <div className="flex items-center space-x-4 mt-4">
                     <div className="flex items-center space-x-2">
@@ -188,20 +189,34 @@ export default function SessionTracker({ onSessionStart, onSessionEnd }: Session
                     onClick={startSession}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex items-center space-x-2 px-6 py-3 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-lg text-green-400 font-medium transition-all duration-200"
+                    className="group relative px-8 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl text-white/90 font-light text-lg transition-all duration-300"
                   >
-                    <Play className="w-5 h-5" />
-                    <span>Start Session</span>
+                    <div className="flex items-center space-x-3">
+                      <Play className="w-5 h-5" />
+                      <span>Start Session</span>
+                    </div>
+                    {/* Button glow on hover */}
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+                      initial={false}
+                    />
                   </motion.button>
                 ) : (
                   <motion.button
                     onClick={stopSession}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex items-center space-x-2 px-6 py-3 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded-lg text-red-400 font-medium transition-all duration-200"
+                    className="group relative px-8 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl text-white/90 font-light text-lg transition-all duration-300"
                   >
-                    <Square className="w-5 h-5" />
-                    <span>End Session</span>
+                    <div className="flex items-center space-x-3">
+                      <Square className="w-5 h-5" />
+                      <span>End Session</span>
+                    </div>
+                    {/* Button glow on hover */}
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+                      initial={false}
+                    />
                   </motion.button>
                 )}
               </div>

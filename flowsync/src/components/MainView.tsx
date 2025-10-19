@@ -125,10 +125,10 @@ export default function MainView() {
             />
           </motion.button>
 
-          {/* Secondary Action - Start Focus Session */}
+          {/* Secondary Action - Open Dashboard */}
           <motion.button
             onClick={() => setShowDashboard(true)}
-            className="group relative px-8 py-3 bg-green-500/10 hover:bg-green-500/20 backdrop-blur-xl border border-green-500/30 rounded-xl text-green-400 font-medium text-sm transition-all duration-300 mt-4"
+            className="group relative px-8 py-3 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl text-white/90 font-light text-sm transition-all duration-300 mt-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
@@ -137,8 +137,13 @@ export default function MainView() {
           >
             <div className="flex items-center space-x-2">
               <BarChart3 className="w-4 h-4" />
-              <span>Start Focus Session</span>
+              <span>Open Dashboard</span>
             </div>
+            {/* Button glow on hover */}
+            <motion.div
+              className="absolute inset-0 rounded-xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+              initial={false}
+            />
           </motion.button>
 
           {/* Error message */}
@@ -278,7 +283,7 @@ export default function MainView() {
         {showDashboard && (
           <>
             {console.log('[MainView] Rendering EnhancedFlowSyncDashboard')}
-            <EnhancedFlowSyncDashboard />
+            <EnhancedFlowSyncDashboard onClose={() => setShowDashboard(false)} />
           </>
         )}
       </AnimatePresence>

@@ -167,10 +167,10 @@ export default function FocusGraph({ isActive, sessionStartTime, onDataUpdate }:
   return (
     <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-white flex items-center space-x-2">
-          <Activity className="w-6 h-6" />
-          <span>Real-time Focus Analytics</span>
-        </h2>
+         <h2 className="text-2xl font-extralight text-white/90 tracking-tight flex items-center space-x-2">
+           <Activity className="w-6 h-6" />
+           <span>Real-time Focus Analytics</span>
+         </h2>
         {isActive && (
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>

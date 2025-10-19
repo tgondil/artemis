@@ -227,11 +227,11 @@ export default function SessionSummary({ sessionData, onStartNewSession, onClose
           >
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2 flex items-center space-x-2">
-                  <Trophy className="w-8 h-8 text-yellow-400" />
-                  <span>Session Complete!</span>
-                </h1>
-                <p className="text-white/70">Here's how you performed in this session</p>
+                 <h1 className="text-4xl font-extralight text-white/90 tracking-tight mb-2 flex items-center space-x-2">
+                   <Trophy className="w-8 h-8 text-yellow-400" />
+                   <span>Session Complete!</span>
+                 </h1>
+                 <p className="text-xl font-light text-white/50">Here's how you performed in this session</p>
               </div>
               <button
                 onClick={onClose}
@@ -423,19 +423,33 @@ export default function SessionSummary({ sessionData, onStartNewSession, onClose
               onClick={onStartNewSession}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center space-x-2 px-6 py-3 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-lg text-green-400 font-medium transition-all duration-200"
+               className="group relative px-8 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl text-white/90 font-light text-lg transition-all duration-300"
             >
-              <Target className="w-5 h-5" />
-              <span>Start New Session</span>
+              <div className="flex items-center space-x-3">
+                <Target className="w-5 h-5" />
+                <span>Start New Session</span>
+              </div>
+              {/* Button glow on hover */}
+              <motion.div
+                className="absolute inset-0 rounded-2xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+                initial={false}
+              />
             </motion.button>
             
             <motion.button
               onClick={onClose}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center space-x-2 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white font-medium transition-all duration-200"
+               className="group relative px-8 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl text-white/90 font-light text-lg transition-all duration-300"
             >
-              <span>Close</span>
+              <div className="flex items-center space-x-3">
+                <span>Close</span>
+              </div>
+              {/* Button glow on hover */}
+              <motion.div
+                className="absolute inset-0 rounded-2xl bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"
+                initial={false}
+              />
             </motion.button>
           </motion.div>
         </div>

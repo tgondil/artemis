@@ -2,7 +2,7 @@
 
 <img src="https://img.icons8.com/fluency/200/000000/brain.png" alt="Artemis Logo" width="200"/>
 
-# 🧠 Artemis: Designed for ADHD minds. Built for calm.
+# 🧠 Artemis: Focus isn't forced, it's found.
 
 **Redefine Your Focus Strategy: Combat Distractions with Our Game-Changing AI Solution! Effortlessly Orchestrate Your Environment Through Real-Time Gaze Tracking-Experience Zero Cognitive Friction, Enhanced Productivity, and Unmatched Control Over Your Attention!**
 

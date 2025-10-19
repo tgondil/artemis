@@ -4,7 +4,7 @@
 
 # 🧠 Artemis: Designed for ADHD minds. Built for calm.
 
-**Redefine Your Focus Strategy: Combat Distractions with Our Game-Changing AI Solution! Effortlessly Orchestrate Your Environment Through Real-Time Gaze Tracking—Experience Zero Cognitive Friction, Enhanced Productivity, and Unmatched Control Over Your Attention!**
+**Redefine Your Focus Strategy: Combat Distractions with Our Game-Changing AI Solution! Effortlessly Orchestrate Your Environment Through Real-Time Gaze Tracking-Experience Zero Cognitive Friction, Enhanced Productivity, and Unmatched Control Over Your Attention!**
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![Coverage Status](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)]()

@@ -19,16 +19,17 @@ export default function GazeCursor({ x, y, fixationStability, visible }: GazeCur
 
   if (!visible) return null;
 
-  // Color based on fixation stability
+  // Subtle color based on fixation stability (more refined)
   const getColor = () => {
-    if (fixationStability > 70) return '#A7C7E7'; // Blue - stable
-    if (fixationStability > 40) return '#F4D03F'; // Yellow - moderate
-    return '#E74C3C'; // Red - unstable
+    if (fixationStability > 80) return '#A7C7E7'; // Soft blue - very stable
+    if (fixationStability > 60) return '#93C5FD'; // Sky blue - stable
+    if (fixationStability > 40) return '#FCD34D'; // Soft yellow - moderate
+    return '#F87171'; // Soft red - unstable
   };
 
-  // Size based on stability
+  // Subtle size variation
   const getSize = () => {
-    return Math.max(12, Math.min(24, 12 + (fixationStability / 100) * 12));
+    return Math.max(10, Math.min(18, 10 + (fixationStability / 100) * 8));
   };
 
   return (
@@ -41,9 +42,9 @@ export default function GazeCursor({ x, y, fixationStability, visible }: GazeCur
       }}
       transition={{
         type: 'spring',
-        stiffness: 300,
-        damping: 30,
-        mass: 0.5,
+        stiffness: 400,
+        damping: 35,
+        mass: 0.3,
       }}
       style={{
         transform: 'translate(-50%, -50%)',

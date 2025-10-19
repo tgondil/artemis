@@ -8,10 +8,10 @@ interface TabMetadata {
   faviconUrl?: string;
   // Enhanced context fields
   domain: string;
-  category: 'research' | 'social' | 'entertainment' | 'productivity' | 'development' | 'news' | 'other';
+  category: 'research' | 'social' | 'entertainment' | 'productivity' | 'development' | 'news' | 'education' | 'other';
   isWorkRelated: boolean;
   projectContext?: string;
-  contentType: 'documentation' | 'code' | 'article' | 'video' | 'social' | 'shopping' | 'other';
+  contentType: 'documentation' | 'code' | 'article' | 'video' | 'social' | 'shopping' | 'tutorial' | 'other';
 }
 
 interface TabContent {
@@ -79,7 +79,6 @@ export interface BrowsingPatterns {
   averageTabDwellTime: number;
   mostEngagedTabs: Array<{url: string, engagementScore: number}>;
   categoryDistribution: Record<string, number>;
-  workRelatedRatio: number;
   distractionLevel: number; // 0-100, based on non-work tabs
 }
 
@@ -123,8 +122,6 @@ export interface ChromeRichContext {
       sentiment: string;
       readingTime: number;
     }>;
-    workRelatedTabs: any[];
-    nonWorkTabs: any[];
     activeTabs: any[];
     recentlyUsedTabs: any[];
     highEngagementTabs: any[];
@@ -140,31 +137,11 @@ function analyzeTabContext(url: string, title: string): Partial<TabMetadata> {
   let isWorkRelated = false;
   let contentType: TabMetadata['contentType'] = 'other';
   
-  // Work-related domains
-  if (domain.includes('github.com') || domain.includes('stackoverflow.com') || 
-      domain.includes('developer.mozilla.org') || domain.includes('docs.') ||
-      domain.includes('api.') || domain.includes('dev.')) {
-    category = 'development';
-    isWorkRelated = true;
-    contentType = 'documentation';
-  } else if (domain.includes('google.com') && title.toLowerCase().includes('search')) {
-    category = 'research';
-    isWorkRelated = true;
-  } else if (domain.includes('youtube.com')) {
-    category = 'entertainment';
-    contentType = 'video';
-  } else if (domain.includes('twitter.com') || domain.includes('facebook.com') || 
-             domain.includes('instagram.com') || domain.includes('linkedin.com')) {
-    category = 'social';
-    contentType = 'social';
-  } else if (domain.includes('reddit.com') || domain.includes('hackernews.com')) {
-    category = 'news';
-    contentType = 'article';
-  } else if (domain.includes('notion.so') || domain.includes('trello.com') || 
-             domain.includes('asana.com') || domain.includes('slack.com')) {
-    category = 'productivity';
-    isWorkRelated = true;
-  }
+  // Let the LLM make all decisions - no pre-categorization
+  // Only extract basic metadata, let LLM analyze relevance
+  category = 'other';
+  isWorkRelated = false;
+  contentType = 'other';
   
   // Extract project context from URL
   let projectContext: string | undefined;
@@ -331,11 +308,11 @@ export class ChromeMonitor {
         .map((t: any) => {
           const context = analyzeTabContext(t.url, t.title || 'Untitled');
           return {
-            id: t.id,
-            title: t.title || 'Untitled',
-            url: t.url,
-            type: t.type,
-            faviconUrl: t.faviconUrl,
+          id: t.id,
+          title: t.title || 'Untitled',
+          url: t.url,
+          type: t.type,
+          faviconUrl: t.faviconUrl,
             domain: context.domain || new URL(t.url).hostname,
             category: context.category || 'other',
             isWorkRelated: context.isWorkRelated || false,
@@ -849,7 +826,7 @@ export class ChromeMonitor {
       // Get activity data and calculate engagement score
       const activity = this.getTabActivity(tabMeta.id);
       const engagementScore = calculateEngagementScore(activity);
-      
+
       chromeTabs.push({
         metadata: enhancedMetadata,
         content,
@@ -1008,10 +985,9 @@ export class ChromeMonitor {
     const now = Date.now();
     const sessionDuration = now - this.sessionStartTime;
     
-    // Calculate browsing patterns
+    // Calculate browsing patterns (without pre-categorization bias)
     const totalTabs = snapshot.tabs.length;
-    const workRelatedTabs = snapshot.tabs.filter(tab => tab.metadata.isWorkRelated);
-    const workRelatedRatio = totalTabs > 0 ? workRelatedTabs.length / totalTabs : 0;
+    // Let LLM determine relevance, don't pre-categorize
     
     // Calculate category distribution
     const categoryDistribution: Record<string, number> = {};
@@ -1043,39 +1019,28 @@ export class ChromeMonitor {
     const totalTimeSpent = snapshot.tabs.reduce((sum, tab) => sum + tab.activity.timeSpent, 0);
     const averageTabDwellTime = totalTabs > 0 ? totalTimeSpent / totalTabs : 0;
     
-    // Calculate distraction level (based on non-work tabs)
-    const distractionLevel = Math.round((1 - workRelatedRatio) * 100);
+    // Let LLM determine distraction level based on actual content analysis
+    const distractionLevel = 0; // Neutral - let LLM decide
     
     // Determine browsing mode
     const activeTabs = snapshot.activeTabs;
     const primaryDomain = activeTabs.length > 0 ? activeTabs[0].metadata.domain : 'unknown';
     
+    // Let LLM determine browsing mode based on actual content analysis
     let browsingMode: ChromeRichContext['currentBrowsingContext']['browsingMode'] = 'mixed';
-    if (workRelatedTabs.length > totalTabs * 0.8) {
-      browsingMode = 'development';
-    } else if (categoryDistribution.social > categoryDistribution.development) {
-      browsingMode = 'social';
-    } else if (categoryDistribution.entertainment > categoryDistribution.development) {
-      browsingMode = 'entertainment';
-    } else if (categoryDistribution.research > categoryDistribution.development) {
-      browsingMode = 'research';
-    }
     
     // Calculate focus stability (time spent in same tab)
     const focusStability = activeTabs.length > 0 
       ? Math.min(activeTabs[0].activity.focusDuration / 300, 1) * 100 // 5 minutes = 100%
       : 0;
     
-    // Calculate behavioral insights
+    // Calculate behavioral insights (without bias)
     const attentionSpan = Math.round(averageTabDwellTime);
     const multitaskingLevel = Math.min(totalTabs / 10, 1) * 100; // 10+ tabs = 100%
-    const productivityScore = Math.round(workRelatedRatio * 100);
+    const productivityScore = 50; // Neutral - let LLM determine based on actual task performance
     
-    // Identify distraction triggers
+    // Let LLM identify distraction triggers based on actual content analysis
     const distractionTriggers: string[] = [];
-    if (categoryDistribution.social > 0) distractionTriggers.push('Social media');
-    if (categoryDistribution.entertainment > 0) distractionTriggers.push('Entertainment');
-    if (categoryDistribution.news > 0) distractionTriggers.push('News');
     
     // Comprehensive tab analysis for task-aware filtering
     const tabAnalysis = snapshot.tabs.map(tab => ({
@@ -1093,7 +1058,7 @@ export class ChromeMonitor {
       switchCount: tab.activity.switchCount,
       lastActive: tab.activity.lastActive,
       isActive: tab.activity.isActive,
-      // Content analysis for task relevance
+      // Enhanced semantic content analysis
       hasCode: tab.content?.technicalInfo?.hasCode || false,
       hasForms: tab.content?.technicalInfo?.hasForms || false,
       hasVideos: tab.content?.technicalInfo?.hasVideos || false,
@@ -1101,7 +1066,22 @@ export class ChromeMonitor {
       language: tab.content?.technicalInfo?.language || '',
       topics: tab.content?.semanticInfo?.topics || [],
       sentiment: tab.content?.semanticInfo?.sentiment || 'neutral',
-      readingTime: tab.content?.semanticInfo?.readingTime || 0
+      readingTime: tab.content?.semanticInfo?.readingTime || 0,
+      // Additional semantic content
+      pageDescription: tab.content?.metaDescription || '',
+      headings: tab.content?.headings || [],
+      articleTitle: tab.content?.semanticInfo?.articleTitle || '',
+      author: tab.content?.semanticInfo?.author || '',
+      publishDate: tab.content?.semanticInfo?.publishDate || '',
+      // Content summary for semantic analysis
+      contentSummary: tab.content?.text?.slice(0, 500) || '', // First 500 chars for context
+      mainContent: tab.content?.mainContent || '',
+      // Time-based analysis for conservative filtering
+      timeSinceLastActive: Date.now() - tab.activity.lastActive,
+      timeSinceOpened: Date.now() - (tab.activity.lastActive - tab.activity.timeSpent),
+      isRecentlyUsed: (Date.now() - tab.activity.lastActive) < 1800000, // 30 minutes
+      isLongUnused: (Date.now() - tab.activity.lastActive) > 3600000, // 1 hour
+      usagePattern: this.calculateUsagePattern(tab.activity)
     }));
     
     return {
@@ -1118,7 +1098,6 @@ export class ChromeMonitor {
         averageTabDwellTime,
         mostEngagedTabs,
         categoryDistribution,
-        workRelatedRatio,
         distractionLevel
       },
       behavioralInsights: {
@@ -1130,8 +1109,6 @@ export class ChromeMonitor {
       tabAnalysis: {
         totalTabs: tabAnalysis.length,
         tabs: tabAnalysis,
-        workRelatedTabs: tabAnalysis.filter(tab => tab.isWorkRelated),
-        nonWorkTabs: tabAnalysis.filter(tab => !tab.isWorkRelated),
         activeTabs: tabAnalysis.filter(tab => tab.isActive),
         recentlyUsedTabs: tabAnalysis
           .filter(tab => Date.now() - tab.lastActive < 300000) // Last 5 minutes
@@ -1141,6 +1118,27 @@ export class ChromeMonitor {
           .sort((a, b) => b.engagementScore - a.engagementScore)
       }
     };
+  }
+
+  /**
+   * Calculate usage pattern for a tab
+   */
+  private calculateUsagePattern(activity: TabActivity): string {
+    const timeSpent = activity.timeSpent;
+    const switchCount = activity.switchCount;
+    const focusDuration = activity.focusDuration;
+    
+    if (timeSpent > 300000 && switchCount < 3) { // 5+ minutes, few switches
+      return 'focused';
+    } else if (switchCount > 10) { // Many switches
+      return 'frequent_switching';
+    } else if (timeSpent < 30000) { // Less than 30 seconds
+      return 'brief_visit';
+    } else if (focusDuration > 120000) { // 2+ minutes focused
+      return 'deep_engagement';
+    } else {
+      return 'moderate_usage';
+    }
   }
 
   /**

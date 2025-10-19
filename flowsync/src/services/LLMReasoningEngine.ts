@@ -256,6 +256,144 @@ export class LLMReasoningEngine {
   }
 
   /**
+   * Compute real metrics from context data with temporal evolution
+   */
+  private computeRealMetrics(windowContext: any, chromeContext: any): {
+    focusStability: number;
+    distractionLevel: number;
+    taskCoherence: number;
+    cognitiveLoad: number;
+    productivityScore: number;
+    attentionSpan: number;
+    multitaskingLevel: number;
+    sessionEvolution: {
+      baselineImprovement: number;
+      learningCurve: number;
+      adaptationLevel: number;
+      usageMaturity: number;
+    };
+  } {
+    // Focus Stability: Based on time spent in same window/tab
+    const currentWindowTime = windowContext?.currentTask?.focusDuration || 0;
+    const currentTabTime = chromeContext?.tabAnalysis?.activeTabs?.[0]?.focusDuration || 0;
+    const focusStability = Math.min(Math.max(currentWindowTime, currentTabTime) / 300000, 1) * 100; // 5 minutes = 100%
+
+    // Distraction Level: Based on tab switching frequency and engagement
+    const tabSwitchingFrequency = chromeContext?.sessionPatterns?.tabSwitchingFrequency || 0;
+    const lowEngagementTabs = chromeContext?.tabAnalysis?.tabs?.filter((tab: any) => tab.engagementScore < 30) || [];
+    const distractionLevel = Math.min((tabSwitchingFrequency * 10) + (lowEngagementTabs.length * 5), 100);
+
+    // Task Coherence: Based on consistent domain usage and project context
+    const primaryDomain = chromeContext?.currentBrowsingContext?.primaryDomain || '';
+    const projectContext = windowContext?.currentTask?.project || '';
+    const domainConsistency = primaryDomain && projectContext ? 
+      (primaryDomain.includes(projectContext.toLowerCase()) ? 80 : 40) : 50;
+    const taskCoherence = Math.min(domainConsistency + (focusStability * 0.2), 100);
+
+    // Cognitive Load: Based on number of tabs, switching, and content complexity
+    const totalTabs = chromeContext?.tabAnalysis?.totalTabs || 0;
+    const codeTabs = chromeContext?.tabAnalysis?.tabs?.filter((tab: any) => tab.hasCode) || [];
+    const cognitiveLoad = Math.min((totalTabs * 2) + (codeTabs.length * 5) + (tabSwitchingFrequency * 3), 100);
+
+    // Productivity Score: Based on engagement and task focus
+    const highEngagementTabs = chromeContext?.tabAnalysis?.highEngagementTabs || [];
+    const productivityScore = Math.min((highEngagementTabs.length * 20) + (focusStability * 0.3), 100);
+
+    // Attention Span: Based on average dwell time
+    const attentionSpan = chromeContext?.sessionPatterns?.averageTabDwellTime || 0;
+
+    // Multitasking Level: Based on number of active tabs
+    const activeTabs = chromeContext?.tabAnalysis?.activeTabs?.length || 0;
+    const multitaskingLevel = Math.min(activeTabs * 10, 100);
+
+    // Temporal Evolution Metrics
+    const sessionDuration = Date.now() - this.temporalContext.sessionStart;
+    const totalSessionTime = windowContext?.sessionContext?.totalSessionTime || 0;
+    const sessionCount = this.temporalContext.focusSessions.length;
+    const memoryEntries = this.memory.length;
+    
+    // Baseline Improvement: How much better the user has gotten over time
+    const baselineImprovement = this.calculateBaselineImprovement();
+    
+    // Learning Curve: How quickly the user adapts to the system
+    const learningCurve = this.calculateLearningCurve(sessionDuration, sessionCount);
+    
+    // Adaptation Level: How well the user has adapted to FlowSync
+    const adaptationLevel = this.calculateAdaptationLevel(memoryEntries, sessionCount);
+    
+    // Usage Maturity: How experienced the user is with the system
+    const usageMaturity = this.calculateUsageMaturity(totalSessionTime, sessionCount);
+
+    return {
+      focusStability: Math.round(focusStability),
+      distractionLevel: Math.round(distractionLevel),
+      taskCoherence: Math.round(taskCoherence),
+      cognitiveLoad: Math.round(cognitiveLoad),
+      productivityScore: Math.round(productivityScore),
+      attentionSpan: Math.round(attentionSpan),
+      multitaskingLevel: Math.round(multitaskingLevel),
+      sessionEvolution: {
+        baselineImprovement: Math.round(baselineImprovement),
+        learningCurve: Math.round(learningCurve),
+        adaptationLevel: Math.round(adaptationLevel),
+        usageMaturity: Math.round(usageMaturity)
+      }
+    };
+  }
+
+  /**
+   * Calculate baseline improvement over time
+   */
+  private calculateBaselineImprovement(): number {
+    if (this.memory.length < 2) return 0;
+    
+    // Compare recent vs early performance
+    const recentMemories = this.memory.slice(-5); // Last 5 entries
+    const earlyMemories = this.memory.slice(0, 5); // First 5 entries
+    
+    const recentAvgFocus = recentMemories.reduce((sum, mem) => sum + (mem.context?.focusStability || 0), 0) / recentMemories.length;
+    const earlyAvgFocus = earlyMemories.reduce((sum, mem) => sum + (mem.context?.focusStability || 0), 0) / earlyMemories.length;
+    
+    return Math.max(0, Math.min(100, (recentAvgFocus - earlyAvgFocus) * 2));
+  }
+
+  /**
+   * Calculate learning curve based on session progression
+   */
+  private calculateLearningCurve(sessionDuration: number, sessionCount: number): number {
+    if (sessionCount === 0) return 0;
+    
+    // Learning curve: faster adaptation = higher score
+    const sessionHours = sessionDuration / (1000 * 60 * 60);
+    const sessionsPerHour = sessionCount / Math.max(sessionHours, 1);
+    
+    // Higher sessions per hour = faster learning
+    return Math.min(100, sessionsPerHour * 20);
+  }
+
+  /**
+   * Calculate adaptation level based on memory and usage
+   */
+  private calculateAdaptationLevel(memoryEntries: number, sessionCount: number): number {
+    // More memory entries and sessions = better adaptation
+    const memoryScore = Math.min(50, memoryEntries * 2);
+    const sessionScore = Math.min(50, sessionCount * 5);
+    
+    return memoryScore + sessionScore;
+  }
+
+  /**
+   * Calculate usage maturity based on total time and experience
+   */
+  private calculateUsageMaturity(totalSessionTime: number, sessionCount: number): number {
+    const totalHours = totalSessionTime / (1000 * 60 * 60);
+    const experienceScore = Math.min(60, totalHours * 2); // 30 hours = 60 points
+    const consistencyScore = Math.min(40, sessionCount * 2); // 20 sessions = 40 points
+    
+    return experienceScore + consistencyScore;
+  }
+
+  /**
    * Get comprehensive analysis in a single LLM call with memory and temporal awareness
    */
   async getComprehensiveAnalysis(): Promise<{
@@ -276,6 +414,13 @@ export class LLMReasoningEngine {
       const chromeContext = await getChromeMonitor().getRichContext();
       const chromeContent = await getChromeMonitor().getContentSummary();
 
+      // Compute real metrics from actual data
+      const computedMetrics = this.computeRealMetrics(windowContext, chromeContext);
+      console.log('[LLM] Computed real metrics:', computedMetrics);
+
+      // Seed ground truth to ensure concrete task context
+      this.seedGroundTruth(windowContext, chromeContext);
+
       // Get relevant memories for context
       const relevantMemories = this.getRelevantMemories({ windowContext, chromeContext, chromeContent });
       
@@ -284,11 +429,14 @@ export class LLMReasoningEngine {
         windowContext, 
         chromeContext, 
         chromeContent, 
-        relevantMemories
+        relevantMemories,
+        computedMetrics
       );
 
       const response = await this.callClaude(contextPrompt, `
-        Analyze the user's current cognitive state and provide comprehensive insights with temporal awareness and memory.
+        Given the measured values above, interpret the user's cognitive state and provide comprehensive insights with temporal awareness and memory.
+        
+        **IMPORTANT**: Use the computed metrics provided above. Do not generate your own numbers - interpret the real measurements.
         
         Consider:
         - Current context and activity patterns
@@ -297,16 +445,23 @@ export class LLMReasoningEngine {
         - Semantic grounding (current task, work mode, cognitive patterns)
         - Previous analysis results and their evolution
         
+        **DECISION LOGIC CONSTRAINTS:**
+        Before deciding to hide or keep any tab, you MUST apply these rules:
+
+        1. **Keep all tabs** that are related to the user's current task, project, or work mode.
+        2. **Only hide tabs if** they are completely unrelated to the current task.
+        3. **When in doubt, KEEP the tab visible.**
+
         Return ONLY a valid JSON response with this exact structure:
         {
           "flowState": {
             "phase": "calibration" | "engagement" | "flow" | "recovery",
             "confidence": 85,
             "indicators": {
-              "focusStability": 75,
-              "taskCoherence": 80,
-              "distractionLevel": 25,
-              "cognitiveLoad": 60
+              "focusStability": ${computedMetrics?.focusStability || 50},
+              "taskCoherence": ${computedMetrics?.taskCoherence || 50},
+              "distractionLevel": ${computedMetrics?.distractionLevel || 50},
+              "cognitiveLoad": ${computedMetrics?.cognitiveLoad || 50}
             }
           },
           "optimization": {
@@ -318,12 +473,32 @@ export class LLMReasoningEngine {
               "lighting": "warm" | "cool" | "dim" | "bright",
               "audio": "ambient" | "silence" | "focus_music"
             },
-            "priority": "high" | "medium" | "low"
+            "priority": "high" | "medium" | "low",
+            "tabAnalysis": {
+              "evaluations": [
+                {
+                  "tabId": "123",
+                  "title": "JavaScript Tutorial - YouTube",
+                  "decision": "keep",
+                  "relevanceScore": 0.87,
+                  "reason": "Educational JavaScript content relevant to learning task"
+                },
+                {
+                  "tabId": "456", 
+                  "title": "Facebook News Feed",
+                  "decision": "hide",
+                  "relevanceScore": 0.15,
+                  "reason": "Social media distraction unrelated to current task"
+                }
+              ]
+            }
           },
           "insights": {
             "currentTask": "Working on FlowSync application development",
             "workMode": "development" | "research" | "learning" | "communication" | "mixed",
-            "productivityScore": 75,
+            "productivityScore": ${computedMetrics?.productivityScore || 50},
+            "attentionSpan": ${computedMetrics?.attentionSpan || 0},
+            "multitaskingLevel": ${computedMetrics?.multitaskingLevel || 0},
             "distractionTriggers": ["social media", "email notifications"],
             "recommendedActions": ["close distracting tabs", "enable focus mode"]
           }
@@ -339,6 +514,9 @@ export class LLMReasoningEngine {
         const significance = this.calculateSignificance(analysis);
         const tags = this.generateTags(analysis);
         this.addMemory({ windowContext, chromeContext, chromeContent }, analysis, significance, tags);
+        
+        // Learn from the analysis patterns
+        this.learnFromPatterns(windowContext, chromeContext, analysis);
         
         // Cache the successful analysis
         this.cachedAnalysis = analysis;
@@ -534,6 +712,114 @@ export class LLMReasoningEngine {
   }
 
   /**
+   * Seed ground truth to ensure concrete task context
+   */
+  private seedGroundTruth(windowContext: any, chromeContext: any): void {
+    // Ensure we have concrete task context, never "Unknown"
+    if (!this.semanticGrounding.currentTask || this.semanticGrounding.currentTask === 'Unknown') {
+      // Use primary domain as fallback
+      const primaryDomain = chromeContext?.currentBrowsingContext?.primaryDomain;
+      if (primaryDomain) {
+        this.semanticGrounding.currentTask = this.inferTaskFromDomain(primaryDomain);
+      }
+      
+      // Use window context as fallback
+      if (!this.semanticGrounding.currentTask) {
+        const primaryActivity = windowContext?.sessionContext?.primaryActivity;
+        if (primaryActivity && primaryActivity !== 'Unknown') {
+          this.semanticGrounding.currentTask = primaryActivity;
+        }
+      }
+      
+      // Use project context as fallback
+      if (!this.semanticGrounding.currentTask) {
+        const project = windowContext?.currentTask?.project;
+        if (project && project !== 'Unknown') {
+          this.semanticGrounding.currentTask = `Working on ${project}`;
+        }
+      }
+    }
+
+    // Ensure we have concrete project context
+    if (!this.semanticGrounding.projectContext || this.semanticGrounding.projectContext === 'Unknown') {
+      const project = windowContext?.currentTask?.project;
+      if (project && project !== 'Unknown') {
+        this.semanticGrounding.projectContext = project;
+      } else {
+        // Infer from primary domain
+        const primaryDomain = chromeContext?.currentBrowsingContext?.primaryDomain;
+        if (primaryDomain) {
+          this.semanticGrounding.projectContext = this.inferProjectFromDomain(primaryDomain);
+        }
+      }
+    }
+
+    console.log('[LLM] Seeded ground truth:', {
+      currentTask: this.semanticGrounding.currentTask,
+      projectContext: this.semanticGrounding.projectContext
+    });
+  }
+
+  /**
+   * Infer task from domain name
+   */
+  private inferTaskFromDomain(domain: string): string {
+    if (domain.includes('github.com')) return 'Development work';
+    if (domain.includes('stackoverflow.com')) return 'Problem solving';
+    if (domain.includes('youtube.com')) return 'Learning/Research';
+    if (domain.includes('docs.') || domain.includes('developer.mozilla.org')) return 'Reading documentation';
+    if (domain.includes('medium.com') || domain.includes('dev.to')) return 'Reading articles';
+    if (domain.includes('coursera.org') || domain.includes('udemy.com')) return 'Learning course';
+    return `Working on ${domain}`;
+  }
+
+  /**
+   * Infer project from domain name
+   */
+  private inferProjectFromDomain(domain: string): string {
+    if (domain.includes('github.com')) return 'GitHub project';
+    if (domain.includes('stackoverflow.com')) return 'Problem solving';
+    if (domain.includes('youtube.com')) return 'Learning session';
+    if (domain.includes('docs.')) return 'Documentation review';
+    return domain;
+  }
+
+  /**
+   * Learn from user patterns and adapt system behavior
+   */
+  private learnFromPatterns(windowContext: any, chromeContext: any, analysis: any): void {
+    // Track successful patterns
+    if (analysis.flowState?.phase === 'flow' && analysis.flowState?.confidence > 80) {
+      this.addMemory(
+        { windowContext, chromeContext, chromeContent: {} },
+        { flowState: { phase: 'flow', confidence: 85 } },
+        0.8,
+        ['flow', 'success', 'pattern']
+      );
+    }
+
+    // Track distraction patterns
+    if (analysis.flowState?.indicators?.distractionLevel > 70) {
+      this.addMemory(
+        { windowContext, chromeContext, chromeContent: {} },
+        { flowState: { indicators: { distractionLevel: analysis.flowState.indicators.distractionLevel } } },
+        0.6,
+        ['distraction', 'pattern', 'learning']
+      );
+    }
+
+    // Track task coherence patterns
+    if (analysis.flowState?.indicators?.taskCoherence > 80) {
+      this.addMemory(
+        { windowContext, chromeContext, chromeContent: {} },
+        { flowState: { indicators: { taskCoherence: analysis.flowState.indicators.taskCoherence } } },
+        0.7,
+        ['coherence', 'success', 'pattern']
+      );
+    }
+  }
+
+  /**
    * Calculate significance of current analysis for memory storage
    */
   private calculateSignificance(analysis: any): number {
@@ -598,7 +884,8 @@ export class LLMReasoningEngine {
     windowContext: any, 
     chromeContext: any, 
     chromeContent: any, 
-    relevantMemories: MemoryEntry[]
+    relevantMemories: MemoryEntry[],
+    computedMetrics?: any
   ): string {
     const sessionDuration = Date.now() - this.temporalContext.sessionStart;
     const sessionMinutes = Math.round(sessionDuration / 60000);
@@ -640,6 +927,26 @@ ${relevantMemories.map((memory, index) => `
 ${this.buildContextPrompt(windowContext, chromeContext, chromeContent)}
 ${memoryContext}
 
+## Computed Metrics (Real Data):
+${computedMetrics ? `
+**Current Session Metrics:**
+- Focus Stability: ${computedMetrics.focusStability}% (based on time spent in same window/tab)
+- Distraction Level: ${computedMetrics.distractionLevel}% (based on tab switching and low engagement)
+- Task Coherence: ${computedMetrics.taskCoherence}% (based on domain consistency and project context)
+- Cognitive Load: ${computedMetrics.cognitiveLoad}% (based on tabs, code complexity, and switching)
+- Productivity Score: ${computedMetrics.productivityScore}% (based on engagement and focus)
+- Attention Span: ${computedMetrics.attentionSpan}ms (average dwell time)
+- Multitasking Level: ${computedMetrics.multitaskingLevel}% (based on active tabs)
+
+**Temporal Evolution (How the user has improved over time):**
+- Baseline Improvement: ${computedMetrics.sessionEvolution.baselineImprovement}% (improvement since first use)
+- Learning Curve: ${computedMetrics.sessionEvolution.learningCurve}% (how quickly user adapts)
+- Adaptation Level: ${computedMetrics.sessionEvolution.adaptationLevel}% (how well user has adapted to FlowSync)
+- Usage Maturity: ${computedMetrics.sessionEvolution.usageMaturity}% (experience level with the system)
+
+**Your Task**: Interpret these measured values considering the user's evolution over time and provide qualitative analysis and recommendations that adapt to their experience level.
+` : ''}
+
 ## Analysis Instructions:
 Based on the current context, historical patterns, and temporal awareness, provide a comprehensive analysis that considers:
 
@@ -647,36 +954,91 @@ Based on the current context, historical patterns, and temporal awareness, provi
 1. How the user's cognitive state has evolved over time
 2. Current focus level and task engagement
 3. Distraction patterns and cognitive load
+4. **Adaptive Analysis**: Consider the user's experience level (Usage Maturity) and adapt recommendations accordingly:
+   - **Beginner (0-30%)**: Focus on basic flow concepts, gentle guidance
+   - **Intermediate (30-70%)**: Balanced approach, introduce advanced features
+   - **Expert (70-100%)**: Advanced optimization, sophisticated insights
 
-### Task-Aware Tab Filtering:
-4. **CRITICAL**: Analyze each tab's relevance to the current task
-5. **Task Context**: Identify the primary task domain (e.g., "React development", "research on AI", "writing documentation")
-6. **Tab Relevance**: Score each tab's relevance to the current task (0-1 scale)
-7. **Smart Filtering**: Only hide tabs that are:
-   - Completely unrelated to current task (e.g., social media, news, entertainment)
-   - Actively distracting (e.g., notifications, unrelated work)
-   - Not needed for the current work session
-8. **Keep Visible**: Always keep tabs that are:
-   - Directly related to current task
-   - Supporting documentation or references
-   - Part of the same project/domain
-   - Recently used for the task
+### Task-Specific Tab Relevance Analysis:
+4. **CRITICAL**: You are an assistant that supports focus while maintaining all resources relevant to the current task
+5. **Task Context**: Identify the primary task domain and understand what resources support that task
+6. **Task-Specific Logic**:
+   - **Learning Mode**: Educational videos, tutorials, documentation, and courses are HIGHLY relevant
+   - **Development Mode**: Documentation, Stack Overflow, GitHub, and code examples are relevant
+   - **Research Mode**: Papers, blogs, datasets, and reference materials are relevant
+   - **Communication Mode**: Slack, Gmail, project dashboards, and collaboration tools are relevant
+7. **Semantic Analysis**: For each tab, analyze the actual content and purpose:
+   - **Content Purpose**: What is this tab actually for? (learning, reference, entertainment, communication)
+   - **Task Support**: How does this tab support the current task?
+   - **Educational Value**: Is this educational content for a learning task?
+   - **Reference Value**: Is this reference material for development/research?
+   - **Distraction Assessment**: Is this actively distracting from the current task?
+8. **Conservative Filtering**: Only hide tabs that are:
+   - **Completely unrelated** to current task (social media, news, entertainment during work)
+   - **Haven't been used for a long time** since they were opened (inactive for extended periods)
+   - **Actively distracting** from the current work (not just potentially distracting)
+   - **Not needed** for the current work session
+9. **Keep Visible**: Always keep tabs that are:
+   - Educational content for learning tasks
+   - Documentation for development tasks
+   - Reference materials for research tasks
+   - Communication tools for collaboration tasks
+   - Any content that could support the current task
 
 ### Workspace Optimization:
 9. Optimal workspace adjustments based on their history
 10. Environmental changes that support the current task
 11. Insights that build upon previous analysis
+12. **Adaptive Recommendations**: Tailor suggestions to user's experience level:
+    - **Beginner**: Simple, clear instructions with explanations
+    - **Intermediate**: Balanced complexity with some advanced options
+    - **Expert**: Sophisticated, nuanced recommendations
 
 ### Tab Analysis Requirements:
 - Provide detailed reasoning for each tab's relevance score
 - Explain why each tab should be hidden or kept visible
 - Consider the user's work mode and cognitive state
 - Be conservative - when in doubt, keep tabs visible
+
+### Concrete Examples for Grounding:
+
+**Example 1: Learning JavaScript**
+- Task: "Learning JavaScript"
+- Tab: "YouTube - JavaScript Crash Course for Beginners" → KEEP (related to learning JavaScript)
+- Tab: "MDN JavaScript Documentation" → KEEP (related to learning JavaScript)
+- Tab: "Stack Overflow - JavaScript questions" → KEEP (related to learning JavaScript)
+- Tab: "YouTube Music" → HIDE (completely unrelated to JavaScript learning)
+- Tab: "Reddit /r/javascriptmemes" → HIDE (completely unrelated to JavaScript learning)
+
+**Example 2: React Development**
+- Task: "React Development"
+- Tab: "React Documentation" → KEEP (related to React development)
+- Tab: "GitHub - React project" → KEEP (related to React development)
+- Tab: "Stack Overflow - React useEffect" → KEEP (related to React development)
+- Tab: "YouTube React Tutorial" → KEEP (related to React development)
+- Tab: "Facebook News Feed" → HIDE (completely unrelated to React development)
+
+**Example 3: Research Task**
+- Task: "Research AI Ethics"
+- Tab: "ArXiv - AI Ethics Paper" → KEEP (related to AI ethics research)
+- Tab: "Medium - AI Ethics Blog" → KEEP (related to AI ethics research)
+- Tab: "Google Scholar" → KEEP (related to AI ethics research)
+- Tab: "Twitter AI Ethics Thread" → KEEP (related to AI ethics research)
+- Tab: "Netflix" → HIDE (completely unrelated to AI ethics research)
+
+### Analysis Guidelines:
+- **Analyze actual content purpose** - what is this tab actually for?
+- **Consider task-specific relevance** - how does this support the current task?
+- **Be conservative** - when in doubt, keep tabs visible
+- **Focus on content purpose** rather than domain assumptions
+- **Educational content is relevant for learning tasks**
+- **Documentation is relevant for development tasks**
+- **Research materials are relevant for research tasks**
 `;
   }
 
   /**
-   * Build comprehensive context prompt for LLM
+   * Build factual context prompt (observations only)
    */
   private buildContextPrompt(windowContext: any, chromeContext: any, chromeContent: any): string {
     return `
@@ -692,6 +1054,13 @@ Based on the current context, historical patterns, and temporal awareness, provi
 - **Focus Stability**: ${Math.round(windowContext.sessionContext.focusStability)}%
 - **Task Switches**: ${windowContext.sessionContext.taskSwitches}
 
+## Current Task Analysis
+- **Inferred Task**: ${windowContext.sessionContext.primaryActivity || 'Unknown'}
+- **Task Domain**: ${windowContext.currentTask.project || 'Unknown'}
+- **Work Context**: ${windowContext.currentTask.windowType}
+- **Task Duration**: ${Math.round(windowContext.currentTask.focusDuration / 1000)}s on current task
+- **Task Stability**: ${Math.round(windowContext.sessionContext.focusStability)}% (higher = more focused on single task)
+
 ## Browser Context
 - **Active Tabs**: ${chromeContext.currentBrowsingContext.activeTabs.length}
 - **Primary Domain**: ${chromeContext.currentBrowsingContext.primaryDomain}
@@ -701,15 +1070,25 @@ Based on the current context, historical patterns, and temporal awareness, provi
 - **Distraction Level**: ${chromeContext.sessionPatterns.distractionLevel}%
 - **Tab Switching Frequency**: ${chromeContext.sessionPatterns.tabSwitchingFrequency?.toFixed(2) || '0.00'}/min
 
-## Content Analysis
-- **Current Page**: ${chromeContent.llmContext.currentPage.title}
+## Current Page Analysis
+- **Page Title**: ${chromeContent.llmContext.currentPage.title}
 - **Page Description**: ${chromeContent.llmContext.currentPage.description}
-- **Topics**: ${chromeContent.llmContext.currentPage.topics.join(', ')}
+- **Page Topics**: ${chromeContent.llmContext.currentPage.topics.join(', ')}
+- **Content Type**: ${chromeContent.llmContext.currentPage.contentType || 'Unknown'}
 - **Reading Time**: ${chromeContent.llmContext.currentPage.readingTime} min
 - **Has Code**: ${chromeContent.llmContext.currentPage.hasCode}
 - **Language**: ${chromeContent.llmContext.currentPage.language || 'N/A'}
 - **Framework**: ${chromeContent.llmContext.currentPage.framework || 'N/A'}
 - **Sentiment**: ${chromeContent.llmContext.currentPage.sentiment}
+
+## Task-Content Relevance Analysis
+**CRITICAL**: Analyze how the current page relates to the user's current task:
+- **Task**: ${windowContext.sessionContext.primaryActivity || 'Unknown'}
+- **Current Page**: ${chromeContent.llmContext.currentPage.title}
+- **Relevance Check**: Does this page support the current task?
+- **Content Match**: Do the page topics align with the task domain?
+- **Learning Context**: If task is "learning", educational content should be kept visible
+- **Development Context**: If task is "development", documentation and tutorials should be kept visible
 
 ## Session Patterns
 - **Content Focus**: ${chromeContent.llmContext.sessionContext.contentFocus}
@@ -728,34 +1107,49 @@ ${chromeContext.sessionPatterns.mostEngagedTabs.slice(0, 3).map((tab: any) =>
   `- ${tab.url.split('/')[2]}: ${tab.engagementScore}%`
 ).join('\n')}
 
-## Comprehensive Tab Analysis for Task-Aware Filtering
+## Tab Summary
 **Total Tabs**: ${chromeContext.tabAnalysis.totalTabs}
-**Work Related**: ${chromeContext.tabAnalysis.workRelatedTabs.length}
-**Non-Work**: ${chromeContext.tabAnalysis.nonWorkTabs.length}
 **Active**: ${chromeContext.tabAnalysis.activeTabs.length}
 **Recently Used**: ${chromeContext.tabAnalysis.recentlyUsedTabs.length}
+**High Engagement**: ${chromeContext.tabAnalysis.highEngagementTabs.length}
 
-### All Tabs with Context:
+### Detailed Tab Analysis for LLM Decision Making:
 ${chromeContext.tabAnalysis.tabs.map((tab: any, index: number) => `
 **Tab ${index + 1}**: ${tab.title}
-- URL: ${tab.url}
-- Domain: ${tab.domain}
-- Category: ${tab.category}
-- Work Related: ${tab.isWorkRelated}
-- Project Context: ${tab.projectContext || 'N/A'}
-- Content Type: ${tab.contentType}
-- Time Spent: ${Math.round(tab.timeSpent / 1000)}s
-- Engagement Score: ${tab.engagementScore}%
-- Focus Duration: ${Math.round(tab.focusDuration / 1000)}s
-- Switch Count: ${tab.switchCount}
-- Has Code: ${tab.hasCode}
-- Framework: ${tab.framework || 'N/A'}
-- Language: ${tab.language || 'N/A'}
-- Topics: ${tab.topics.join(', ') || 'N/A'}
-- Sentiment: ${tab.sentiment}
-- Reading Time: ${tab.readingTime} min
-- Last Active: ${new Date(tab.lastActive).toLocaleTimeString()}
-- Currently Active: ${tab.isActive}
+- **URL**: ${tab.url}
+- **Domain**: ${tab.domain}
+- **Page Description**: ${tab.pageDescription || 'N/A'}
+- **Content Summary**: ${tab.contentSummary || 'N/A'}
+- **Headings**: ${tab.headings?.slice(0, 5).join(', ') || 'N/A'}
+- **Article Title**: ${tab.articleTitle || 'N/A'}
+- **Author**: ${tab.author || 'N/A'}
+- **Topics**: ${tab.topics?.join(', ') || 'N/A'}
+- **Has Code**: ${tab.hasCode}
+- **Framework**: ${tab.framework || 'N/A'}
+- **Language**: ${tab.language || 'N/A'}
+- **Reading Time**: ${tab.readingTime} min
+- **Time Spent**: ${Math.round(tab.timeSpent / 1000)}s
+- **Engagement Score**: ${tab.engagementScore}%
+- **Currently Active**: ${tab.isActive}
+- **Last Active**: ${new Date(tab.lastActive).toLocaleString()}
+- **Time Since Last Active**: ${Math.round((Date.now() - tab.lastActive) / 60000)} minutes ago
+- **Time Since Opened**: ${Math.round((Date.now() - tab.lastActive + tab.timeSpent) / 60000)} minutes ago
+- **Recently Used**: ${tab.isRecentlyUsed ? 'Yes (within 30 min)' : 'No (over 30 min ago)'}
+- **Long Unused**: ${tab.isLongUnused ? 'Yes (over 1 hour)' : 'No (within 1 hour)'}
+- **Usage Pattern**: ${tab.usagePattern}
+
+**SEMANTIC ANALYSIS FOR THIS TAB**:
+Current Task: "${windowContext.sessionContext.primaryActivity || 'Unknown'}"
+Tab Title: "${tab.title}"
+Page Description: "${tab.pageDescription || 'N/A'}"
+Content Summary: "${tab.contentSummary || 'N/A'}"
+
+Based on the examples above and the actual content, analyze this tab:
+1. **Content Purpose**: What is this tab actually for? (learning, reference, entertainment, communication, research)
+2. **Task Relevance**: How does this tab relate to the current task "${windowContext.sessionContext.primaryActivity || 'Unknown'}"?
+3. **Decision**: Should this tab be KEPT or HIDDEN? 
+   - **KEEP**: If related to the current task in any way
+   - **HIDE**: Only if completely unrelated to the current task
 `).join('\n')}
 
 ## Window Type Distribution

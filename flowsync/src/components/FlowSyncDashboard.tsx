@@ -311,8 +311,8 @@ export default function FlowSyncDashboard() {
                   <span className="text-white text-sm">{data.chromeContext?.currentBrowsingContext?.activeTabs?.length || 'Unknown'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/70 text-sm">Work Related:</span>
-                  <span className="text-white text-sm">{data.chromeContext?.sessionPatterns?.workRelatedRatio ? Math.round(data.chromeContext.sessionPatterns.workRelatedRatio * 100) : 'Unknown'}%</span>
+                  <span className="text-white/70 text-sm">High Engagement:</span>
+                  <span className="text-white text-sm">{data.chromeContext?.tabAnalysis?.highEngagementTabs?.length || 0} tabs</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white/70 text-sm">Distraction Level:</span>
@@ -490,6 +490,35 @@ export default function FlowSyncDashboard() {
                             <div className="text-red-400 text-xs truncate">{tab.url}</div>
                             <div className="text-red-300 text-xs">Distraction Level: {Math.round(tab.distractionLevel * 100)}%</div>
                             <div className="text-red-300 text-xs">Reason: {tab.reason}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Per-Tab Evaluations */}
+                  {data.optimization.tabAnalysis.evaluations?.length > 0 && (
+                    <div>
+                      <div className="text-white/70 text-sm mb-2">🔍 Per-Tab Evaluations ({data.optimization.tabAnalysis.evaluations.length}):</div>
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {data.optimization.tabAnalysis.evaluations.map((evaluation: any, index: number) => (
+                          <div key={index} className={`border rounded p-2 text-xs ${
+                            evaluation.decision === 'keep' 
+                              ? 'bg-green-500/10 border-green-500/20' 
+                              : 'bg-red-500/10 border-red-500/20'
+                          }`}>
+                            <div className="text-white font-medium truncate">{evaluation.title}</div>
+                            <div className="flex justify-between items-center mt-1">
+                              <span className={`text-xs font-medium ${
+                                evaluation.decision === 'keep' ? 'text-green-400' : 'text-red-400'
+                              }`}>
+                                {evaluation.decision.toUpperCase()}
+                              </span>
+                              <span className="text-white/70 text-xs">
+                                Relevance: {Math.round(evaluation.relevanceScore * 100)}%
+                              </span>
+                            </div>
+                            <div className="text-white/60 text-xs mt-1">{evaluation.reason}</div>
                           </div>
                         ))}
                       </div>

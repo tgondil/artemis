@@ -134,9 +134,12 @@ export class WindowMonitor {
    */
   async getActiveWindow(): Promise<WindowInfo | null> {
     try {
+      console.log('[WindowMonitor] Getting active window...');
       // Use our custom function that fixes the path issue
       const win = await getActiveWindowWithCorrectPath();
+      console.log('[WindowMonitor] Active window result:', win);
       if (!win) {
+        console.log('[WindowMonitor] No active window found');
         return null;
       }
 
@@ -357,6 +360,9 @@ export class WindowMonitor {
       windowTypeDistribution: Record<string, number>;
     };
   } {
+    console.log('[WindowMonitor] Getting rich context...');
+    console.log('[WindowMonitor] Current window:', this.currentWindow);
+    console.log('[WindowMonitor] History length:', this.history.length);
     const now = Date.now();
     const sessionStart = this.history.length > 0 ? this.history[0].timestamp : now;
     const totalSessionTime = now - sessionStart;

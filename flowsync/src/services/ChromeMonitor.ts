@@ -97,6 +97,38 @@ export interface ChromeRichContext {
     productivityScore: number;
     distractionTriggers: string[];
   };
+  tabAnalysis: {
+    totalTabs: number;
+    tabs: Array<{
+      id: string;
+      title: string;
+      url: string;
+      domain: string;
+      category: string;
+      isWorkRelated: boolean;
+      projectContext?: string;
+      contentType: string;
+      timeSpent: number;
+      focusDuration: number;
+      engagementScore: number;
+      switchCount: number;
+      lastActive: number;
+      isActive: boolean;
+      hasCode: boolean;
+      hasForms: boolean;
+      hasVideos: boolean;
+      framework: string;
+      language: string;
+      topics: string[];
+      sentiment: string;
+      readingTime: number;
+    }>;
+    workRelatedTabs: any[];
+    nonWorkTabs: any[];
+    activeTabs: any[];
+    recentlyUsedTabs: any[];
+    highEngagementTabs: any[];
+  };
 }
 
 // Helper functions for tab analysis
@@ -168,9 +200,107 @@ export class ChromeMonitor {
   private lastPollTime: number = Date.now();
   private sessionStartTime: number = Date.now();
   private tabSwitchCount: number = 0;
+  
+  // Tab change detection for LLM updates
+  private lastTabHashes: Map<string, string> = new Map();
+  private lastLLMCallTime: number = 0;
+  private readonly minLLMIntervalMs: number = 10000; // 10 seconds minimum between LLM calls
+  private pendingLLMCall: boolean = false;
+  private initializationComplete: boolean = false;
+  private readonly initializationDelayMs: number = 15000; // 15 seconds before allowing LLM calls
 
   constructor(cdpPort: number = 9222) {
     this.cdpPort = cdpPort;
+    
+    // Set up initialization timer
+    setTimeout(() => {
+      this.initializationComplete = true;
+      console.log('[ChromeMonitor] Initialization period complete - LLM calls now allowed');
+    }, this.initializationDelayMs);
+  }
+
+  /**
+   * Generate a hash for tab content to detect changes
+   */
+  private generateTabHash(tab: TabMetadata): string {
+    const content = `${tab.url}-${tab.title}-${tab.domain}-${tab.category}`;
+    return Buffer.from(content).toString('base64').slice(0, 16);
+  }
+
+  /**
+   * Check if any tabs have changed and trigger LLM update if needed
+   */
+  private async checkForTabChanges(tabs: TabMetadata[]): Promise<boolean> {
+    let hasChanges = false;
+    const currentHashes = new Map<string, string>();
+    
+    // Check each tab for changes
+    for (const tab of tabs) {
+      const currentHash = this.generateTabHash(tab);
+      const lastHash = this.lastTabHashes.get(tab.id);
+      
+      if (lastHash !== currentHash) {
+        console.log(`[ChromeMonitor] Tab change detected: ${tab.title} (${tab.url})`);
+        hasChanges = true;
+      }
+      
+      currentHashes.set(tab.id, currentHash);
+    }
+    
+    // Update the hash map
+    this.lastTabHashes = currentHashes;
+    
+    // Trigger LLM update if there are changes and enough time has passed
+    if (hasChanges && this.shouldTriggerLLMUpdate()) {
+      await this.triggerLLMUpdate();
+    }
+    
+    return hasChanges;
+  }
+
+  /**
+   * Check if we should trigger an LLM update
+   */
+  private shouldTriggerLLMUpdate(): boolean {
+    // Don't trigger LLM calls during initialization period
+    if (!this.initializationComplete) {
+      console.log('[ChromeMonitor] Skipping LLM call - still in initialization period');
+      return false;
+    }
+    
+    const now = Date.now();
+    const timeSinceLastCall = now - this.lastLLMCallTime;
+    return timeSinceLastCall >= this.minLLMIntervalMs && !this.pendingLLMCall;
+  }
+
+  /**
+   * Trigger LLM update for new tab context
+   */
+  private async triggerLLMUpdate(): Promise<void> {
+    if (this.pendingLLMCall) {
+      console.log('[ChromeMonitor] LLM call already pending, skipping...');
+      return;
+    }
+
+    this.pendingLLMCall = true;
+    this.lastLLMCallTime = Date.now();
+    
+    try {
+      console.log('[ChromeMonitor] Triggering LLM update for new tab context...');
+      
+      // Import the LLM reasoning engine
+      const { getLLMReasoningEngine } = await import('./LLMReasoningEngine');
+      const llmEngine = getLLMReasoningEngine();
+      
+      // Force new analysis due to tab changes
+      await llmEngine.forceNewAnalysis();
+      
+      console.log('[ChromeMonitor] LLM update completed successfully');
+    } catch (error) {
+      console.error('[ChromeMonitor] Failed to trigger LLM update:', error);
+    } finally {
+      this.pendingLLMCall = false;
+    }
   }
 
   /**
@@ -214,10 +344,223 @@ export class ChromeMonitor {
           };
         });
 
+      // Check for tab changes and trigger LLM update if needed
+      await this.checkForTabChanges(tabs);
+
       return tabs;
     } catch (error: any) {
       console.error('[ChromeMonitor] Failed to list tabs:', error.message);
       throw error;
+    }
+  }
+
+  /**
+   * Extract content from a specific tab with gaze context
+   */
+  async extractTabContentWithGaze(tabId: string, gazeX?: number, gazeY?: number): Promise<TabContent | null> {
+    let client;
+    try {
+      client = await CDP({ target: tabId, port: this.cdpPort });
+      const { Runtime } = client;
+
+      // Execute enhanced content extraction with gaze mapping
+      const result = await Runtime.evaluate({
+        expression: `
+          (() => {
+            try {
+              // Get gaze context if coordinates provided
+              let gazeContext = null;
+              if (${gazeX !== undefined} && ${gazeY !== undefined}) {
+                const elementAtGaze = document.elementFromPoint(${gazeX}, ${gazeY});
+                if (elementAtGaze) {
+                  gazeContext = {
+                    element: elementAtGaze.tagName,
+                    text: elementAtGaze.textContent?.slice(0, 200),
+                    className: elementAtGaze.className,
+                    boundingRect: elementAtGaze.getBoundingClientRect(),
+                    isInteractive: elementAtGaze.tagName === 'A' || elementAtGaze.tagName === 'BUTTON',
+                    isCode: elementAtGaze.tagName === 'CODE' || elementAtGaze.tagName === 'PRE'
+                  };
+                }
+              }
+
+              // Find main content (try different selectors)
+              const mainContent = 
+                document.querySelector('article') ||
+                document.querySelector('main') ||
+                document.querySelector('[role="main"]') ||
+                document.querySelector('.content') ||
+                document.querySelector('#content') ||
+                document.body;
+
+              // Extract basic page info
+              const pageTitle = document.title || '';
+              const metaDescription = document.querySelector('meta[name="description"]')?.content || '';
+              const keywords = Array.from(document.querySelectorAll('meta[name="keywords"]'))
+                .map(meta => meta.content?.split(',').map(k => k.trim()))
+                .flat()
+                .filter(Boolean);
+
+              // Extract headings
+              const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4'))
+                .map(h => h.textContent?.trim())
+                .filter(Boolean)
+                .slice(0, 15);
+
+              // Extract links
+              const links = Array.from(document.querySelectorAll('a[href]'))
+                .slice(0, 20)
+                .map(link => ({
+                  text: link.textContent?.trim() || '',
+                  url: link.href
+                }))
+                .filter(link => link.text && link.url);
+
+              // Extract images
+              const images = Array.from(document.querySelectorAll('img[src]'))
+                .slice(0, 10)
+                .map(img => ({
+                  alt: img.alt || '',
+                  src: img.src
+                }));
+
+              // Extract main content text
+              const text = mainContent.innerText || '';
+              const mainContentText = text.slice(0, 10000);
+              const visibleText = text.slice(0, 1000);
+
+              // Count various elements
+              const codeBlocks = document.querySelectorAll('pre, code, .highlight, .code').length;
+              const hasCode = codeBlocks > 0;
+              const hasForms = document.querySelectorAll('form').length > 0;
+              const hasVideos = document.querySelectorAll('video, iframe[src*="youtube"], iframe[src*="vimeo"]').length > 0;
+
+              // Detect framework/technology
+              let framework = '';
+              if (document.querySelector('[data-reactroot], [data-react-helmet]')) framework = 'React';
+              else if (document.querySelector('[data-vue]')) framework = 'Vue';
+              else if (document.querySelector('[data-ng-app]')) framework = 'Angular';
+              else if (document.querySelector('[data-svelte]')) framework = 'Svelte';
+
+              // Detect programming language in code blocks
+              let language = '';
+              const codeElements = document.querySelectorAll('code, pre');
+              for (const code of codeElements) {
+                const className = code.className;
+                if (className.includes('javascript') || className.includes('js')) language = 'JavaScript';
+                else if (className.includes('python') || className.includes('py')) language = 'Python';
+                else if (className.includes('java')) language = 'Java';
+                else if (className.includes('cpp') || className.includes('c++')) language = 'C++';
+                else if (className.includes('css')) language = 'CSS';
+                else if (className.includes('html')) language = 'HTML';
+                if (language) break;
+              }
+
+              // Extract semantic information
+              const articleTitle = document.querySelector('article h1, .article-title, .post-title')?.textContent?.trim();
+              const author = document.querySelector('[rel="author"], .author, .byline')?.textContent?.trim();
+              const publishDate = document.querySelector('time, .date, .published')?.textContent?.trim();
+              
+              // Estimate reading time (250 words per minute)
+              const wordCount = text.split(/\\s+/).length;
+              const readingTime = Math.ceil(wordCount / 250);
+
+              // Extract topics from headings and content
+              const topics = [...headings, ...text.split(/\\s+/).slice(0, 100)]
+                .filter(word => word.length > 3)
+                .map(word => word.toLowerCase())
+                .filter(word => !['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'its', 'may', 'new', 'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did', 'man'].includes(word))
+                .slice(0, 10);
+
+              // Simple sentiment analysis
+              const positiveWords = ['good', 'great', 'excellent', 'amazing', 'wonderful', 'fantastic', 'love', 'best', 'perfect', 'awesome'];
+              const negativeWords = ['bad', 'terrible', 'awful', 'horrible', 'hate', 'worst', 'disappointing', 'poor', 'wrong', 'error'];
+              const positiveCount = positiveWords.reduce((count, word) => count + (text.toLowerCase().includes(word) ? 1 : 0), 0);
+              const negativeCount = negativeWords.reduce((count, word) => count + (text.toLowerCase().includes(word) ? 1 : 0), 0);
+              let sentiment = 'neutral';
+              if (positiveCount > negativeCount) sentiment = 'positive';
+              else if (negativeCount > positiveCount) sentiment = 'negative';
+
+              // Get scroll info
+              const scrollPosition = window.scrollY;
+              const scrollHeight = document.body.scrollHeight;
+
+              return {
+                text: mainContentText,
+                headings,
+                codeBlocks,
+                scrollPosition,
+                scrollHeight,
+                visibleText,
+                pageTitle,
+                metaDescription,
+                keywords,
+                mainContent: mainContentText,
+                links,
+                images,
+                gazeContext, // NEW: Gaze-specific content
+                semanticInfo: {
+                  articleTitle,
+                  author,
+                  publishDate,
+                  readingTime,
+                  topics,
+                  sentiment
+                },
+                technicalInfo: {
+                  framework,
+                  language,
+                  hasCode,
+                  hasForms,
+                  hasVideos
+                }
+              };
+            } catch (e) {
+              return {
+                text: '',
+                headings: [],
+                codeBlocks: 0,
+                scrollPosition: 0,
+                scrollHeight: 0,
+                visibleText: '',
+                pageTitle: '',
+                metaDescription: '',
+                keywords: [],
+                mainContent: '',
+                links: [],
+                images: [],
+                gazeContext: null,
+                semanticInfo: {
+                  topics: [],
+                  sentiment: 'neutral'
+                },
+                technicalInfo: {
+                  hasCode: false,
+                  hasForms: false,
+                  hasVideos: false
+                },
+                error: e.message
+              };
+            }
+          })()
+        `,
+        returnByValue: true,
+        awaitPromise: true,
+      });
+
+      if (result.exceptionDetails) {
+        console.error('[ChromeMonitor] Exception extracting content:', result.exceptionDetails);
+        return null;
+      }
+
+      return result.result.value as TabContent;
+    } catch (error: any) {
+      console.error(`[ChromeMonitor] Failed to extract content from tab ${tabId}:`, error.message);
+      return null;
+    } finally {
+      if (client) {
+        await client.close();
+      }
     }
   }
 
@@ -677,13 +1020,23 @@ export class ChromeMonitor {
       categoryDistribution[category] = (categoryDistribution[category] || 0) + tab.activity.timeSpent;
     });
     
-    // Get most engaged tabs
+    // Get most engaged tabs with detailed context
     const mostEngagedTabs = snapshot.tabs
       .sort((a, b) => b.activity.engagementScore - a.activity.engagementScore)
       .slice(0, 5)
       .map(tab => ({
+        id: tab.metadata.id,
         url: tab.metadata.url,
-        engagementScore: tab.activity.engagementScore
+        title: tab.metadata.title,
+        domain: tab.metadata.domain,
+        category: tab.metadata.category,
+        isWorkRelated: tab.metadata.isWorkRelated,
+        projectContext: tab.metadata.projectContext,
+        contentType: tab.metadata.contentType,
+        engagementScore: tab.activity.engagementScore,
+        timeSpent: tab.activity.timeSpent,
+        focusDuration: tab.activity.focusDuration,
+        switchCount: tab.activity.switchCount
       }));
     
     // Calculate average dwell time
@@ -724,6 +1077,33 @@ export class ChromeMonitor {
     if (categoryDistribution.entertainment > 0) distractionTriggers.push('Entertainment');
     if (categoryDistribution.news > 0) distractionTriggers.push('News');
     
+    // Comprehensive tab analysis for task-aware filtering
+    const tabAnalysis = snapshot.tabs.map(tab => ({
+      id: tab.metadata.id,
+      title: tab.metadata.title,
+      url: tab.metadata.url,
+      domain: tab.metadata.domain,
+      category: tab.metadata.category,
+      isWorkRelated: tab.metadata.isWorkRelated,
+      projectContext: tab.metadata.projectContext,
+      contentType: tab.metadata.contentType,
+      timeSpent: tab.activity.timeSpent,
+      focusDuration: tab.activity.focusDuration,
+      engagementScore: tab.activity.engagementScore,
+      switchCount: tab.activity.switchCount,
+      lastActive: tab.activity.lastActive,
+      isActive: tab.activity.isActive,
+      // Content analysis for task relevance
+      hasCode: tab.content?.technicalInfo?.hasCode || false,
+      hasForms: tab.content?.technicalInfo?.hasForms || false,
+      hasVideos: tab.content?.technicalInfo?.hasVideos || false,
+      framework: tab.content?.technicalInfo?.framework || '',
+      language: tab.content?.technicalInfo?.language || '',
+      topics: tab.content?.semanticInfo?.topics || [],
+      sentiment: tab.content?.semanticInfo?.sentiment || 'neutral',
+      readingTime: tab.content?.semanticInfo?.readingTime || 0
+    }));
+    
     return {
       currentBrowsingContext: {
         activeTabs,
@@ -746,6 +1126,19 @@ export class ChromeMonitor {
         multitaskingLevel,
         productivityScore,
         distractionTriggers
+      },
+      tabAnalysis: {
+        totalTabs: tabAnalysis.length,
+        tabs: tabAnalysis,
+        workRelatedTabs: tabAnalysis.filter(tab => tab.isWorkRelated),
+        nonWorkTabs: tabAnalysis.filter(tab => !tab.isWorkRelated),
+        activeTabs: tabAnalysis.filter(tab => tab.isActive),
+        recentlyUsedTabs: tabAnalysis
+          .filter(tab => Date.now() - tab.lastActive < 300000) // Last 5 minutes
+          .sort((a, b) => b.lastActive - a.lastActive),
+        highEngagementTabs: tabAnalysis
+          .filter(tab => tab.engagementScore > 70)
+          .sort((a, b) => b.engagementScore - a.engagementScore)
       }
     };
   }

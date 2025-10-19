@@ -70,3 +70,18 @@ contextBridge.exposeInMainWorld('flowsyncWindowAPI', {
   // Cleanup
   cleanup: () => ipcRenderer.invoke('window:cleanup'),
 });
+
+// Expose LLM Reasoning Engine API to renderer
+contextBridge.exposeInMainWorld('llmReasoning', {
+  // Analyze flow state
+  analyzeFlowState: () => ipcRenderer.invoke('llm:analyze-flow-state'),
+  
+  // Generate workspace optimization
+  generateWorkspaceOptimization: () => ipcRenderer.invoke('llm:generate-workspace-optimization'),
+  
+  // Generate session insights
+  generateSessionInsights: () => ipcRenderer.invoke('llm:generate-session-insights'),
+  
+  // Get comprehensive analysis (all three in one call)
+  getComprehensiveAnalysis: () => ipcRenderer.invoke('llm:get-comprehensive-analysis'),
+});

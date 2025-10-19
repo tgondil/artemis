@@ -206,6 +206,14 @@ export function useWindowTracker(pollInterval: number = 5000) {
   }, [state.appTimeSpent, formatDuration]);
 
 
+  // Auto-start tracking on mount
+  useEffect(() => {
+    if (!state.isTracking && !state.error) {
+      console.log('[WindowTracker] Auto-starting window tracking...');
+      startTracking();
+    }
+  }, [state.isTracking, state.error, startTracking]);
+
   // Polling effect
   useEffect(() => {
     if (state.isTracking) {

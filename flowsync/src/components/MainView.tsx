@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, BarChart3 } from 'lucide-react';
 import GazeCursor from './GazeCursor';
 import WindowTracker from './WindowTracker';
-import RichContextTest from './RichContextTest';
-import ChromeContextTest from './ChromeContextTest';
-import ContentAnalysisTest from './ContentAnalysisTest';
+import FlowSyncDashboard from './FlowSyncDashboard';
 import { useEyeTraxGazeTracker } from '../hooks/useEyeTraxGazeTracker';
 
 export default function MainView() {
   const [showMetrics, setShowMetrics] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
 
   const {
     isTracking,
@@ -195,14 +194,26 @@ export default function MainView() {
         <WindowTracker />
       </motion.div>
 
-      {/* Rich Context Test - Bottom Right */}
-      <RichContextTest />
-      
-      {/* Chrome Context Test - Top Right */}
-      <ChromeContextTest />
-      
-      {/* Content Analysis Test - Bottom Left */}
-      <ContentAnalysisTest />
+      {/* Dashboard Toggle - Top Right */}
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.6 }}
+        className="fixed top-8 right-8 z-20"
+      >
+        <button
+          onClick={() => {
+            console.log('[MainView] Dashboard button clicked, current state:', showDashboard);
+            setShowDashboard(!showDashboard);
+            console.log('[MainView] Dashboard state set to:', !showDashboard);
+          }}
+          className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg hover:bg-white/20 transition-all duration-200 text-white"
+          title="Open FlowSync Dashboard"
+        >
+          <BarChart3 size={20} />
+        </button>
+      </motion.div>
+
 
       {/* Minimal Metrics - Bottom Right (optional) */}
       <AnimatePresence>
@@ -245,6 +256,16 @@ export default function MainView() {
           toggle tracking
         </motion.div>
       )}
+
+      {/* FlowSync Dashboard */}
+      <AnimatePresence>
+        {showDashboard && (
+          <>
+            {console.log('[MainView] Rendering FlowSyncDashboard')}
+            <FlowSyncDashboard />
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -2,8 +2,13 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { spawn, ChildProcess } from 'child_process';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 import { getChromeMonitor, ChromeSnapshot } from './services/ChromeMonitor';
 import { getWindowMonitor, WindowSnapshot } from './services/WindowMonitor';
+import { getLLMReasoningEngine } from './services/LLMReasoningEngine';
 
 // Declare Vite environment variables
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
@@ -591,10 +596,73 @@ function setupChromeMonitorHandlers() {
   });
 }
 
+// ============================================================================
+// LLM Reasoning Engine Setup
+// ============================================================================
+
+function setupLLMReasoningHandlers() {
+  const llmEngine = getLLMReasoningEngine();
+
+  // Analyze flow state
+  ipcMain.handle('llm:analyze-flow-state', async () => {
+    try {
+      console.log('[LLM] Analyzing flow state...');
+      const flowState = await llmEngine.analyzeFlowState();
+      console.log('[LLM] Flow state analysis complete');
+      return { success: true, flowState };
+    } catch (error: any) {
+      console.error('[LLM] Failed to analyze flow state:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Generate workspace optimization
+  ipcMain.handle('llm:generate-workspace-optimization', async () => {
+    try {
+      console.log('[LLM] Generating workspace optimization...');
+      const optimization = await llmEngine.generateWorkspaceOptimization();
+      console.log('[LLM] Workspace optimization generated');
+      return { success: true, optimization };
+    } catch (error: any) {
+      console.error('[LLM] Failed to generate workspace optimization:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Generate session insights
+  ipcMain.handle('llm:generate-session-insights', async () => {
+    try {
+      console.log('[LLM] Generating session insights...');
+      const insights = await llmEngine.generateSessionInsights();
+      console.log('[LLM] Session insights generated');
+      return { success: true, insights };
+    } catch (error: any) {
+      console.error('[LLM] Failed to generate session insights:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get comprehensive analysis (all three in one call)
+  ipcMain.handle('llm:get-comprehensive-analysis', async () => {
+    try {
+      console.log('[LLM] Getting comprehensive analysis...');
+      const analysis = await llmEngine.getComprehensiveAnalysis();
+      console.log('[LLM] Comprehensive analysis complete');
+      return { success: true, ...analysis };
+    } catch (error: any) {
+      console.error('[LLM] Failed to get comprehensive analysis:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  console.log('[LLM] All LLM reasoning handlers registered');
+}
+
 // Register handlers immediately
 setupEyeTraxHandlers();
 setupWindowMonitorHandlers();
 setupChromeMonitorHandlers();
+setupLLMReasoningHandlers();
 
 app.on('ready', async () => {
   // Start EyeTrax Python service FIRST

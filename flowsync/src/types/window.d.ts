@@ -145,11 +145,19 @@ export interface WindowAPI {
   cleanup: () => Promise<{ success: boolean; error?: string }>;
 }
 
+interface LLMReasoningAPI {
+  analyzeFlowState: () => Promise<{ success: boolean; flowState?: any; error?: string }>;
+  generateWorkspaceOptimization: () => Promise<{ success: boolean; optimization?: any; error?: string }>;
+  generateSessionInsights: () => Promise<{ success: boolean; insights?: any; error?: string }>;
+  getComprehensiveAnalysis: () => Promise<{ success: boolean; flowState?: any; optimization?: any; insights?: any; error?: string }>;
+}
+
 declare global {
   interface Window {
     eyetrax: EyeTraxAPI;
     chromeMonitor: ChromeAPI;
     flowsyncWindowAPI: WindowAPI;
+    llmReasoning: LLMReasoningAPI;
     electronAPI: {
       invoke: (channel: string, ...args: any[]) => Promise<any>;
     };

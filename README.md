@@ -1,5 +1,7 @@
 <div align="center">
 
+[▶️ Watch the Demo on YouTube](https://youtu.be/9Qgm1yPk9os?si=sk_fue92kkL8DgA9)
+
 <img src="https://img.icons8.com/fluency/200/000000/brain.png" alt="Artemis Logo" width="200"/>
 
 # 🧠 Artemis: Focus isn't forced, it's found.
